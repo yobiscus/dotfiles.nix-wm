@@ -3,6 +3,7 @@
 {
   imports = [
     ./hyprland.nix
+    ./kitty.nix
   ];
 
   home.packages = [
