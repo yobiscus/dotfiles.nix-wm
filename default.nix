@@ -4,6 +4,7 @@
   imports = [
     ./hyprland.nix
     ./kitty.nix
+    ./waypaper.nix
   ];
 
   home.packages = [
