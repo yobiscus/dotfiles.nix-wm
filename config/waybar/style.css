@@ -1,119 +1,561 @@
+/*
+ * __        __          _                  ____  _         _
+ * \ \      / /_ _ _   _| |__   __ _ _ __  / ___|| |_ _   _| | ___
+ *  \ \ /\ / / _` | | | | '_ \ / _` | '__| \___ \| __| | | | |/ _ \
+ *   \ V  V / (_| | |_| | |_) | (_| | |     ___) | |_| |_| | |  __/
+ *    \_/\_/ \__,_|\__, |_.__/ \__,_|_|    |____/ \__|\__, |_|\___|
+ *                 |___/                              |___/
+ *
+ * -----------------------------------------------------
+*/
+
+/* -----------------------------------------------------
+ * Colors
+ * ----------------------------------------------------- */
+ @define-color backgroundlight #FFFFFF;
+ @define-color backgrounddark #FFFFFF;
+ @define-color workspacesbackground1 #FFFFFF;
+ @define-color workspacesbackground2 @on_surface;
+ @define-color bordercolor #FFFFFF;
+ @define-color textcolor1 #000000;
+ @define-color textcolor2 #000000;
+ @define-color textcolor3 #000000;
+ @define-color iconcolor #FFFFFF;
+
+/* TODO use mutagen to generate these from background */
+@define-color blur_background rgba(26, 17, 15, 0.3);
+@define-color blur_background8 rgba(26, 17, 15, 0.8);
+@define-color background #1a110f;
+@define-color error #ffb4ab;
+@define-color error_container #93000a;
+@define-color inverse_on_surface #392e2b;
+@define-color inverse_primary #8f4c35;
+@define-color inverse_surface #f1dfda;
+@define-color on_background #f1dfda;
+@define-color on_error #690005;
+@define-color on_error_container #ffdad6;
+@define-color on_primary #55200c;
+@define-color on_primary_container #ffdbd0;
+@define-color on_primary_fixed #390c00;
+@define-color on_primary_fixed_variant #723520;
+@define-color on_secondary #442a21;
+@define-color on_secondary_container #ffdbd0;
+@define-color on_secondary_fixed #2c160e;
+@define-color on_secondary_fixed_variant #5d4036;
+@define-color on_surface #f1dfda;
+@define-color on_surface_variant #d8c2bb;
+@define-color on_tertiary #3a3005;
+@define-color on_tertiary_container #f3e2a7;
+@define-color on_tertiary_fixed #221b00;
+@define-color on_tertiary_fixed_variant #51461a;
+@define-color outline #a08d87;
+@define-color outline_variant #53433f;
+@define-color primary #ffb59d;
+@define-color primary_container #723520;
+@define-color primary_fixed #ffdbd0;
+@define-color primary_fixed_dim #ffb59d;
+@define-color scrim #000000;
+@define-color secondary #e7bdb0;
+@define-color secondary_container #5d4036;
+@define-color secondary_fixed #ffdbd0;
+@define-color secondary_fixed_dim #e7bdb0;
+@define-color shadow #000000;
+@define-color source_color #f96732;
+@define-color surface #1a110f;
+@define-color surface_bright #423733;
+@define-color surface_container #271d1b;
+@define-color surface_container_high #322825;
+@define-color surface_container_highest #3d322f;
+@define-color surface_container_low #231917;
+@define-color surface_container_lowest #140c0a;
+@define-color surface_dim #1a110f;
+@define-color surface_tint #ffb59d;
+@define-color surface_variant #53433f;
+@define-color tertiary #d7c68d;
+@define-color tertiary_container #51461a;
+@define-color tertiary_fixed #f3e2a7;
+@define-color tertiary_fixed_dim #d7c68d;
+
+/* -----------------------------------------------------
+ * General
+ * ----------------------------------------------------- */
+
 * {
-    /* `otf-font-awesome` is required to be installed for icons */
-	/* `Material-Icons` is required for notification cneter */
-    font-family: "Fira Sans Semibold", "Font Awesome 7 Free", "Font Awesome 7 Brands", "Font Awesome 6 Free", "Font Awesome 6 Brands", FontAwesome, Roboto, Helvetica, Arial, sans-serif;
-    font-size: 13px;
+    font-family: "Fira Sans Semibold", "Font Awesome 7 Free", "Font Awesome 7 Brands", "Font Awesome 6 Free", "Font Awesome 6 Brands", FontAwesome, "Material Icons", Roboto, Helvetica, Arial, sans-serif;
+    border: none;
+    border-radius: 0px;
 }
 
 window#waybar {
-    background-color: rgba(43, 48, 59, 0.5);
-    border-bottom: 3px solid rgba(100, 114, 125, 0.5);
-    color: #ffffff;
+    background-color: rgba(0,0,0,0.8);
+    border-bottom: 0px solid #ffffff;
+    /* color: #FFFFFF; */
+    background: transparent;
     transition-property: background-color;
     transition-duration: .5s;
 }
 
-window#waybar.hidden {
-    opacity: 0.2;
+.modules-left {
+    margin:8px 0px 8px 10px;
 }
 
-button {
-    /* Use box-shadow instead of border so the text isn't offset */
-    box-shadow: inset 0 -3px transparent;
-    /* Avoid rounded borders under each button name */
-    border: none;
-    border-radius: 0;
+.modules-right {
+    margin:8px 10px 8px 0px;
 }
 
-/* https://github.com/Alexays/Waybar/wiki/FAQ#the-workspace-buttons-have-a-strange-hover-effect */
-button:hover {
-    background: inherit;
-    box-shadow: inset 0 -3px #ffffff;
+.modules-center {
+    margin:8px 0px 8px 0px;
+}
+
+/* -----------------------------------------------------
+ * Workspaces
+ * ----------------------------------------------------- */
+
+#workspaces {
+    background: @workspacesbackground1;
+    margin: 2px 1px 3px 1px;
+    padding: 0px 1px;
+    border-radius: 15px;
+    border: 0px;
+    font-weight: bold;
+    font-style: normal;
+    opacity: 0.8;
+    font-size: 16px;
+    color: @textcolor1;
 }
 
 #workspaces button {
-    padding: 0 5px;
-    background-color: transparent;
-    color: #ffffff;
+    padding: 0px 5px;
+    margin: 4px 3px;
+    border-radius: 15px;
+    border: 0px;
+    color: @textcolor2;
+    background-color: @workspacesbackground2;
+    transition: all 0.3s ease-in-out;
+}
+
+#workspaces button.active {
+    color: @on_primary;
+    background: @primary;
+    border-radius: 15px;
+    min-width: 40px;
+    transition: all 0.3s ease-in-out;
 }
 
 #workspaces button:hover {
-    background: rgba(0, 0, 0, 0.2);
+    color: @on_secondary;
+    background: @secondary;
+    border-radius: 15px;
 }
 
-#workspaces button.focused {
-    background-color: #64727D;
-    box-shadow: inset 0 -3px #ffffff;
+/* -----------------------------------------------------
+ * Tooltips
+ * ----------------------------------------------------- */
+
+tooltip {
+    border-radius: 16px;
+    background-color: @backgroundlight;
+    padding:20px;
+    margin:0px;
 }
 
-#workspaces button.urgent {
-    background-color: #eb4d4b;
+tooltip label {
+    color: @textcolor1;
 }
 
-#mode {
-    background-color: #64727D;
-    border-bottom: 3px solid #ffffff;
+/* -----------------------------------------------------
+ * Window
+ * ----------------------------------------------------- */
+
+#window {
+    background: @backgroundlight;
+    margin: 5px 15px 5px 0px;
+    padding: 2px 10px 0px 10px;
+    border-radius: 12px;
+    color:@textcolor1;
+    font-size:16px;
+    font-weight:normal;
+    opacity:0.8;
 }
 
-#clock,
-#battery,
-#cpu,
-#memory,
-#disk,
-#temperature,
-#backlight,
-#network,
-#pulseaudio,
-#wireplumber,
-#custom-media,
-#tray,
-#mode,
-#idle_inhibitor,
-#scratchpad,
-#mpd {
-    padding: 0 10px;
-    color: #ffffff;
+window#waybar.empty #window {
+    background-color:transparent;
 }
 
-#window,
-#workspaces {
-    margin: 0 4px;
+/* -----------------------------------------------------
+ * Taskbar
+ * ----------------------------------------------------- */
+
+#taskbar {
+    background: @backgroundlight;
+    margin: 3px 15px 3px 0px;
+    padding:0px;
+    border-radius: 15px;
+    font-weight: normal;
+    font-style: normal;
+    opacity:0.8;
+    border: 3px solid @backgroundlight;
 }
 
-/* If workspaces is the leftmost module, omit left margin */
+#taskbar button {
+    margin:0;
+    border-radius: 15px;
+    padding: 0px 5px 0px 5px;
+}
+
+#taskbar.empty {
+    background:transparent;
+    border:0;
+    padding:0;
+    margin:0;
+}
+
+/* -----------------------------------------------------
+ * Modules
+ * ----------------------------------------------------- */
+
 .modules-left > widget:first-child > #workspaces {
     margin-left: 0;
 }
 
-/* If workspaces is the rightmost module, omit right margin */
 .modules-right > widget:last-child > #workspaces {
     margin-right: 0;
 }
 
-#clock {
-    background-color: #64727D;
+/* -----------------------------------------------------
+ * Custom Quicklinks
+ * ----------------------------------------------------- */
+
+#custom-brave,
+#custom-browser,
+#custom-keybindings,
+#custom-outlook,
+#custom-filemanager,
+#custom-teams,
+#custom-chatgpt,
+#custom-calculator,
+#custom-windowsvm,
+#custom-cliphist,
+#custom-settings,
+#custom-wallpaper,
+#custom-system,
+#custom-hyprshade,
+#custom-hypridle,
+#custom-tools,
+#custom-quicklink_chromium,
+#custom-quicklink_edge,
+#custom-quicklink_firefox,
+#custom-quicklink_browser,
+#custom-quicklink_filemanager,
+#custom-quicklink_email,
+#custom-quicklink_thunderbird,
+#custom-quicklink_calculator,
+#custom-sidepad,
+#custom-quicklink1,
+#custom-quicklink2,
+#custom-quicklink3,
+#custom-quicklink4,
+#custom-quicklink5,
+#custom-quicklink6,
+#custom-quicklink7,
+#custom-quicklink8,
+#custom-quicklink9,
+#custom-quicklink10,
+#custom-waybarthemes {
+    margin-right: 16px;
+    font-size: 20px;
+    font-weight: bold;
+    opacity: 0.8;
+    color: @iconcolor;
 }
 
+#custom-quicklink_chromium,
+#custom-quicklink_edge,
+#custom-quicklink_firefox,
+#custom-quicklink_browser,
+#custom-quicklink_filemanager,
+#custom-quicklink_email,
+#custom-quicklink_thunderbird,
+#custom-quicklink_calculator,
+#custom-quicklink1,
+#custom-quicklink2,
+#custom-quicklink3,
+#custom-quicklink4,
+#custom-quicklink5,
+#custom-quicklink6,
+#custom-quicklink7,
+#custom-quicklink8,
+#custom-quicklink9,
+#custom-quicklink10 {
+    margin-right: 18px;
+}
+
+#custom-tools {
+    margin-right:12px;
+}
+
+#custom-hypridle.active {
+    color: @iconcolor;
+}
+
+#custom-hypridle.notactive {
+    color: #dc2f2f;
+}
+
+#custom-ml4w-welcome {
+    margin-right: 12px;
+    background-image: url("../assets/ml4w-icon.svg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: contain;
+    padding-right: 20px;
+}
+
+#custom-chatgpt {
+    margin-right: 16px;
+    background-image: url("../assets/openai.svg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    padding-right: 18px;
+    opacity: 0.8;
+}
+
+/* -----------------------------------------------------
+ * Idle Inhibitor
+ * ----------------------------------------------------- */
+
+#idle_inhibitor {
+    margin-right: 15px;
+    font-size: 22px;
+    font-weight: bold;
+    opacity: 0.8;
+    color: @iconcolor;
+}
+
+#idle_inhibitor.activated {
+    margin-right: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    opacity: 0.8;
+    color: #dc2f2f;
+}
+
+/* -----------------------------------------------------
+ * Custom Modules
+ * ----------------------------------------------------- */
+
+#custom-appmenu {
+    background-color: @backgrounddark;
+    font-size: 16px;
+    color: @textcolor1;
+    border-radius: 15px;
+    padding: 0px 10px 0px 10px;
+    margin: 3px 17px 3px 0px;
+    opacity:0.8;
+    border:3px solid @bordercolor;
+}
+
+/* -----------------------------------------------------
+ * Custom Notification
+ * ----------------------------------------------------- */
+
+ #custom-notification {
+    margin: 0px 13px 0px 0px;
+    padding:0px;
+    font-size:24px;
+    font-family: "Material Icons";
+    color: @iconcolor;
+    opacity: 0.8;
+}
+
+/* -----------------------------------------------------
+ * Custom Exit
+ * ----------------------------------------------------- */
+
+#custom-exit {
+    margin: 0px 13px 0px 0px;
+    padding:0px;
+    font-size:20px;
+    color: @iconcolor;
+    opacity: 0.8;
+}
+
+/* -----------------------------------------------------
+ * Custom Updates
+ * ----------------------------------------------------- */
+
+#custom-updates {
+    background-color: @backgroundlight;
+    font-size: 16px;
+    color: @textcolor1;
+    border-radius: 15px;
+    padding: 2px 10px 0px 10px;
+    margin: 5px 15px 5px 0px;
+    opacity:0.8;
+}
+
+#custom-updates.green {
+    background-color: @backgroundlight;
+}
+
+#custom-updates.yellow {
+    background-color: #ff9a3c;
+    color: #FFFFFF;
+}
+
+#custom-updates.red {
+    background-color: #dc2f2f;
+    color: #FFFFFF;
+}
+
+/* -----------------------------------------------------
+ * Hardware Group
+ * ----------------------------------------------------- */
+
+#disk,#memory,#cpu,#language {
+    margin:0px;
+    padding:0px;
+    font-size:16px;
+    color:@iconcolor;
+}
+
+#language {
+    margin-right:10px;
+}
+
+/* -----------------------------------------------------
+ * Power Profiles Daemon
+ * ----------------------------------------------------- */
+
+ #power-profiles-daemon {
+    margin: 0px 13px 0px 0px;
+    padding:0px;
+    font-size:16px;
+    color:@iconcolor;
+}
+
+/* -----------------------------------------------------
+ * Clock
+ * ----------------------------------------------------- */
+
+#clock {
+    background-color: @backgrounddark;
+    font-size: 16px;
+    color: @textcolor1;
+    border-radius: 15px;
+    padding: 1px 10px 0px 10px;
+    margin: 3px 0px 3px 0px;
+    opacity:0.8;
+    border:3px solid @bordercolor;
+}
+
+/* -----------------------------------------------------
+ * Backlight
+ * ----------------------------------------------------- */
+
+#backlight {
+    background-color: @backgroundlight;
+    font-size: 16px;
+    color: @textcolor1;
+    border-radius: 15px;
+    padding: 2px 10px 0px 10px;
+    margin: 5px 15px 5px 0px;
+    opacity:0.8;
+}
+
+/* -----------------------------------------------------
+ * Pulseaudio
+ * ----------------------------------------------------- */
+
+#pulseaudio {
+    background-color: @backgroundlight;
+    font-size: 16px;
+    color: @textcolor1;
+    border-radius: 15px;
+    padding: 2px 10px 0px 10px;
+    margin: 5px 15px 5px 0px;
+    opacity:0.8;
+}
+
+#pulseaudio.muted {
+    background-color: @backgrounddark;
+    color: @textcolor1;
+}
+
+/* -----------------------------------------------------
+ * Network
+ * ----------------------------------------------------- */
+
+#network {
+    background-color: @backgroundlight;
+    font-size: 16px;
+    color: @textcolor1;
+    border-radius: 15px;
+    padding: 2px 10px 0px 10px;
+    margin: 5px 15px 5px 0px;
+    opacity:0.8;
+}
+
+#network.ethernet {
+    background-color: @backgroundlight;
+    color: @textcolor1;
+}
+
+#network.wifi {
+    background-color: @backgroundlight;
+    color: @textcolor1;
+}
+
+/* -----------------------------------------------------
+ * Bluetooth
+ * ----------------------------------------------------- */
+
+#bluetooth, #bluetooth.on, #bluetooth.connected {
+    background-color: @backgroundlight;
+    font-size: 16px;
+    color: @textcolor1;
+    border-radius: 15px;
+    padding: 2px 10px 0px 10px;
+    margin: 5px 15px 5px 0px;
+    opacity:0.8;
+}
+
+#bluetooth.off {
+    background-color: transparent;
+    padding: 0px;
+    margin: 0px;
+}
+
+/* -----------------------------------------------------
+ * Battery
+ * ----------------------------------------------------- */
+
 #battery {
-    background-color: #ffffff;
-    color: #000000;
+    background-color: @backgroundlight;
+    font-size: 16px;
+    color: @textcolor1;
+    border-radius: 15px;
+    padding: 2px 15px 0px 10px;
+    margin: 5px 15px 5px 0px;
+    opacity:0.8;
 }
 
 #battery.charging, #battery.plugged {
-    color: #ffffff;
-    background-color: #26A65B;
+    color: @textcolor1;
+    background-color: @backgroundlight;
 }
 
 @keyframes blink {
     to {
-        background-color: #ffffff;
-        color: #000000;
+        background-color: @backgroundlight;
+        color: @textcolor2;
     }
 }
 
 #battery.critical:not(.charging) {
     background-color: #f53c3c;
-    color: #ffffff;
+    color: @textcolor3;
     animation-name: blink;
     animation-duration: 0.5s;
     animation-timing-function: linear;
@@ -121,78 +563,12 @@ button:hover {
     animation-direction: alternate;
 }
 
-label:focus {
-    background-color: #000000;
-}
-
-#cpu {
-    background-color: #2ecc71;
-    color: #000000;
-}
-
-#memory {
-    background-color: #9b59b6;
-}
-
-#disk {
-    background-color: #964B00;
-}
-
-#backlight {
-    background-color: #90b1b1;
-}
-
-#network {
-    background-color: #2980b9;
-}
-
-#network.disconnected {
-    background-color: #f53c3c;
-}
-
-#pulseaudio {
-    background-color: #f1c40f;
-    color: #000000;
-}
-
-#pulseaudio.muted {
-    background-color: #90b1b1;
-    color: #2a5c45;
-}
-
-#wireplumber {
-    background-color: #fff0f5;
-    color: #000000;
-}
-
-#wireplumber.muted {
-    background-color: #f53c3c;
-}
-
-#custom-media {
-    background-color: #66cc99;
-    color: #2a5c45;
-    min-width: 100px;
-}
-
-#custom-media.custom-spotify {
-    background-color: #66cc99;
-}
-
-#custom-media.custom-vlc {
-    background-color: #ffa000;
-}
-
-#temperature {
-    background-color: #f0932b;
-}
-
-#temperature.critical {
-    background-color: #eb4d4b;
-}
+/* -----------------------------------------------------
+ * Tray
+ * ----------------------------------------------------- */
 
 #tray {
-    background-color: #2980b9;
+    padding: 0px 15px 0px 0px;
 }
 
 #tray > .passive {
@@ -201,63 +577,4 @@ label:focus {
 
 #tray > .needs-attention {
     -gtk-icon-effect: highlight;
-    background-color: #eb4d4b;
-}
-
-#idle_inhibitor {
-    background-color: #2d3436;
-}
-
-#idle_inhibitor.activated {
-    background-color: #ecf0f1;
-    color: #2d3436;
-}
-
-#mpd {
-    background-color: #66cc99;
-    color: #2a5c45;
-}
-
-#mpd.disconnected {
-    background-color: #f53c3c;
-}
-
-#mpd.stopped {
-    background-color: #90b1b1;
-}
-
-#mpd.paused {
-    background-color: #51a37a;
-}
-
-#language {
-    background: #00b093;
-    color: #740864;
-    padding: 0 5px;
-    margin: 0 5px;
-    min-width: 16px;
-}
-
-#keyboard-state {
-    background: #97e1ad;
-    color: #000000;
-    padding: 0 0px;
-    margin: 0 5px;
-    min-width: 16px;
-}
-
-#keyboard-state > label {
-    padding: 0 5px;
-}
-
-#keyboard-state > label.locked {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-#scratchpad {
-    background: rgba(0, 0, 0, 0.2);
-}
-
-#scratchpad.empty {
-	background-color: transparent;
 }
