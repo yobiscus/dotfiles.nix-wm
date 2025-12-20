@@ -4,6 +4,7 @@
   imports = [
     ./hyprland.nix
     ./kitty.nix
+    ./matugen.nix
     ./waybar.nix
     ./waypaper.nix
   ];
