@@ -35,6 +35,7 @@
       exec "$LOADER" --library-path "$LD_LIBRARY_PATH" "$REAL" "$@"
     '';
     settings = {
+      source = "colors-matugen.conf";
       general = {
         hide_cursor = true;
         ignore_empty_input = true;
@@ -52,9 +53,7 @@
       };
       background = [
         {
-          path = "screenshot";
-          blur_passes = 3;
-          blur_size = 8;
+          path = "$image";
         }
       ];
       input-field = [
