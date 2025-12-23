@@ -10,6 +10,11 @@ input_path = '~/.config/matugen/templates/kitty-colors.conf'
 output_path = '~/.config/kitty/colors-matugen.conf'
 post_hook = 'pkill -SIGUSR1 kitty'
 
+[templates.tmux]
+input_path = '~/.config/matugen/templates/tmux-colors.conf'
+output_path = '~/.config/tmux/colors-matugen.conf'
+post_hook = 'tmux source-file ~/.config/tmux/theme.conf'
+
 [templates.waybar]
 input_path = '~/.config/matugen/templates/waybar-colors.css'
 output_path = '~/.config/waybar/colors.css'
