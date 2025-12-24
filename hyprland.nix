@@ -3,8 +3,6 @@
 {
   home.packages = [
     pkgs.brightnessctl
-    pkgs.kdePackages.dolphin
-    pkgs.kdePackages.qtsvg
     pkgs.wofi
   ];
 
