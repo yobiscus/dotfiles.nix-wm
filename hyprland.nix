@@ -3,6 +3,7 @@
 {
   home.packages = [
     pkgs.brightnessctl
+    pkgs.hyprshot
     pkgs.wofi
   ];
 
