@@ -57,9 +57,9 @@
       ];
       input-field = [
         {
+          monitor = "";
           size = "200, 50";
           position = "0, -80";
-          monitor = "";
           dots_center = true;
           fade_on_empty = false;
           font_color = "rgb(202, 211, 245)";
@@ -68,6 +68,33 @@
           outline_thickness = 5;
           placeholder_text = "<span foreground=\"##cad3f5\">Password...</span>";
           shadow_passes = 2;
+          fail_color = "$error";
+        }
+      ];
+      label = [
+        {
+          monitor = "";
+          # clock
+          text = "cmd[update:1000] echo $TIME";
+          color = "#ffffff";
+          font_size = 70;
+          position = "-50, 20";
+          halign = "right";
+          valign = "bottom";
+          shadow_passes = 5;
+          shadow_size = 10;
+        }
+        {
+          monitor = "";
+          text = "$USER";
+          color = "#ffffff";
+          font_size = 20;
+          font_family = "JetBrainsMono Nerd Font";
+          position = "-50, 120";
+          halign = "right";
+          valign = "bottom";
+          shadow_passes = 5;
+          shadow_size = 10;
         }
       ];
     };
