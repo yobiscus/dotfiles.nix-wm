@@ -10,6 +10,11 @@ input_path = '~/.config/matugen/templates/kitty-colors.conf'
 output_path = '~/.config/kitty/colors-matugen.conf'
 post_hook = 'pkill -SIGUSR1 kitty'
 
+[templates.neovim]
+input_path = '~/.config/matugen/templates/neovim-colors.conf'
+output_path = '~/.config/nvim/lua/yobiscus/colors-matugen.lua'
+post_hook = 'pkill -SIGUSR1 nvim'
+
 [templates.tmux]
 input_path = '~/.config/matugen/templates/tmux-colors.conf'
 output_path = '~/.config/tmux/colors-matugen.conf'
