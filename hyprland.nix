@@ -2,6 +2,7 @@
 
 {
   home.packages = [
+    pkgs.blueman
     pkgs.brightnessctl
     pkgs.hyprshot
     pkgs.wofi

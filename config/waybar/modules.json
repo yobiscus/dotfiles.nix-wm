@@ -59,7 +59,7 @@
               "format-disabled": "",
               "format-off": "",
               "interval": 30,
-              "on-click": "sleep 0.1 && ~/.config/ml4w/settings/bluetooth.sh",
+              "on-click": "sleep 0.1 && blueman-manager",
               "format-no-controller": ""
        },
        "battery": {
@@ -129,7 +129,26 @@
               "tooltip-format-ethernet": " {ifname}\nIP: {ipaddr}\n up: {bandwidthUpBits} down: {bandwidthDownBits}",
               "tooltip-format-disconnected": "Disconnected",
               "max-length": 50,
-              "on-click": "~/.config/ml4w/settings/networkmanager.sh",
+              "on-click": "~/.dotfiles/wm/scripts/networkmanager.sh",
               "on-click-right": "~/.config/ml4w/scripts/nm-applet.sh toggle"
+       },
+       "clock": {
+              "format": "{:%H:%M}",
+              "tooltip-format": "<span size='12pt' font='JetBrainsMono Nerd Font'>{calendar}</span>",
+              "calendar": {
+                     "mode": "month",
+                     "mode-mon-col": 3,
+                     "weeks-pos": "left",
+                     "on-scroll": 1,
+                     "format": {
+                            "today": "<span color='#f49ec4'><b><u>{}</u></b></span>"
+                     }
+              },
+              "actions": {
+                     "on-click-right": "mode",
+                     "on-scroll-down": "shift_up",
+                     "on-scroll-up": "shift_down",
+                     "on-click-middle": "shift_reset"
+              }
        }
 }

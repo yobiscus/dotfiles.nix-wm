@@ -105,6 +105,7 @@ tooltip {
     background-color: @backgroundlight;
     padding:20px;
     margin:0px;
+    opacity: 0.9;
 }
 
 tooltip label {
