@@ -29,6 +29,7 @@
         "network",
         "battery",
         "group/hardware",
+        "custom/hypridle",
         "custom/lock",
         "clock"
     ]

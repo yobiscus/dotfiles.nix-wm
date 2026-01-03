@@ -138,6 +138,8 @@
   };
 
   home.file.".config/hypr/conf".source = ./config/hypr/conf;
+  home.file.".config/hypr/scripts".source = ./config/hypr/scripts;
+
   home.file.".config/hypr/colors-mutagen.conf".source =
     config.lib.file.mkOutOfStoreSymlink
     "${config.home.homeDirectory}/.dotfiles/config/home-manager/modules/wm/config/hypr/colors-matugen.conf";
