@@ -9,10 +9,6 @@
     ./waypaper.nix
   ];
 
-  home.packages = [
-    pkgs.firefox
-  ];
-
   home.pointerCursor = {
     gtk.enable = true;
     package = pkgs.bibata-cursors;
