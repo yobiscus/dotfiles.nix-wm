@@ -119,6 +119,11 @@
        "custom/empty": {
               "format": ""
        },
+       "custom/lock": {
+              "format": "",
+              "on-click": "hyprlock",
+              "tooltip-format": "Lock screen"
+       },
        "network": {
               "format": "{ifname}",
               "format-wifi": " {signalStrength}%",

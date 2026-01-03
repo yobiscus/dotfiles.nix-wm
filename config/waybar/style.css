@@ -319,10 +319,10 @@ window#waybar.empty #window {
 }
 
 /* -----------------------------------------------------
- * Custom Exit
+ * Custom Lock
  * ----------------------------------------------------- */
 
-#custom-exit {
+#custom-lock {
     margin: 0px 13px 0px 0px;
     padding:0px;
     font-size:20px;
