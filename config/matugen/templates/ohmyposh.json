@@ -25,7 +25,7 @@
               "cache_duration": "none"
             },
             "leading_diamond": "\ue0b6",
-            "template": "\{{ .UserName \}}\{{ if .SSHSession \}}@\{{ .HostName \}}\{{ end \}}",
+            "template": "\{{ .UserName \}}",
             "foreground": "{{colors.on_tertiary.default.hex}}",
             "background": "{{colors.tertiary.default.hex}}",
             "type": "session",
