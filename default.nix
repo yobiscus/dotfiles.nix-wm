@@ -15,4 +15,8 @@
     name = "Bibata-Modern-Ice";
     size = 22;
   };
+
+  services.ssh-agent = {
+    enable = true;
+  };
 }
