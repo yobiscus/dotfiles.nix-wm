@@ -130,7 +130,7 @@
        },
        "custom/lock": {
               "format": "",
-              "on-click": "hyprlock",
+              "on-click": "hyprctl dispatch exec hyprlock",
               "tooltip-format": "Lock screen"
        },
        "network": {
