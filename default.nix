@@ -3,6 +3,7 @@
 {
   imports = [
     ./hyprland.nix
+    ./hyprlock.nix
     ./kitty.nix
     ./matugen.nix
     ./waybar.nix
