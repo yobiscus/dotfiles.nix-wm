@@ -1,0 +1,107 @@
+{ config, pkgs, ... }:
+
+{
+  services.swaync = {
+    enable = true;
+    settings = {
+      positionX = "right";
+      positionY = "top";
+      layer = "overlay";
+      cssPriority = "user";
+
+      control-center-width = 360;
+      control-center-height = 700;
+      control-center-margin-top = 11;
+      control-center-margin-right = 3;
+      control-center-margin-left = 0;
+
+      notification-window-width = 360;
+      notification-icon-size = 48;
+      notification-body-image-height = 100;
+      notification-body-image-width = 200;
+
+      timeout = 4;
+      timeout-low = 2;
+      timeout-critical = 6;
+
+      fit-to-screen = false;
+      keyboard-shortcuts = true;
+      image-visibility = "when-available";
+      transition-time = 200;
+      hide-on-clear = true;
+      hide-on-action = true;
+      script-fail-notify = true;
+      scripts = {};
+      notification-visibility = {
+        example-name = {
+          state = "muted";
+          urgency = "Normal";
+          app-name = "Spotify";
+        };
+      };
+      widgets = [
+        "dnd"
+        "buttons-grid"
+        "backlight"
+        "volume"
+        "mpris"
+        "title"
+        "notifications"
+      ];
+      widget-config = {
+        dnd = {
+          text = "Do not Disturb";
+        };
+        title = {
+          text = "Notifications";
+          clear-all-button = true;
+          button-text = "Clear";
+        };
+        mpris = {
+          image-size = 0;
+          image-radius = 0;
+        };
+        backlight = {
+          label = "󰃟";
+        };
+        volume = {
+          label = "";
+        };
+        buttons-grid = {
+          actions = [
+            {
+              label = "";
+              type = "toggle";
+              active = true;
+              command = "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && nmcli radio wifi on || nmcli radio wifi off'";
+              update-command = "sh -c '[[ $(nmcli r wifi) == \"enabled\" ]] && echo true || echo false'";
+            }
+            {
+              label = "";
+              type = "toggle";
+              active = true;
+              command = "rfkill toggle bluetooth";
+              update-command = "";
+            }
+            {
+              label = "󰕾";
+              type = "toggle";
+              active = true;
+              command = "pactl set-sink-mute @DEFAULT_SINK@ toggle";
+              update-command = "";
+            }
+            {
+              label = "";
+              command = "hyprlock";
+            }
+          ];
+        };
+      };
+    };
+  };
+
+  home.file = {
+    ".config/swaync/colors.css".source = ./config/swaync/colors.css;
+    ".config/swaync/style.css".source = ./config/swaync/style.css;
+  };
+}

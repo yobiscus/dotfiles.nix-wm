@@ -31,6 +31,7 @@
         // "group/hardware",
         "custom/hypridle",
         "custom/lock",
-        "clock"
+        "clock",
+        "custom/notification"
     ]
 }

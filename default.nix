@@ -6,6 +6,7 @@
     ./hyprlock.nix
     ./kitty.nix
     ./matugen.nix
+    ./swaync.nix
     ./waybar.nix
     ./waypaper.nix
   ];
