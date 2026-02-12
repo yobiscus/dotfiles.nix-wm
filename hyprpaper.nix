@@ -3,9 +3,8 @@
 {
   home.packages = [
     pkgs.hyprpaper
-    pkgs.waypaper
   ];
 
-  home.file.".config/waypaper".source = ./config/waypaper;
+  home.file.".config/hypr/hyprpaper.conf".source = ./config/hypr/hyprpaper.conf;
   home.file.".config/wallpapers".source = ./config/wallpapers;
 }

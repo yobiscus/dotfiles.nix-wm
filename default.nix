@@ -4,11 +4,11 @@
   imports = [
     ./hyprland.nix
     ./hyprlock.nix
+    ./hyprpaper.nix
     ./kitty.nix
     ./matugen.nix
     ./swaync.nix
     ./waybar.nix
-    ./waypaper.nix
   ];
 
   home.pointerCursor = {
