@@ -44,15 +44,15 @@ window#waybar {
 }
 
 .modules-left {
-    margin:8px 0px 8px 10px;
+    margin:8px 0px 0px 10px;
 }
 
 .modules-right {
-    margin:8px 10px 8px 0px;
+    margin:8px 10px 0px 0px;
 }
 
 .modules-center {
-    margin:8px 0px 8px 0px;
+    margin:8px 0px 0px 0px;
 }
 
 /* -----------------------------------------------------
