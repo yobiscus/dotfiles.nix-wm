@@ -18,19 +18,29 @@ print_status() {
 
 case "$1" in
     status)
-        # Add a tiny delay to avoid race condition on startup
-        sleep 2
         print_status
         ;;
     toggle)
         if pgrep -x "$SERVICE" >/dev/null ; then
             killall "$SERVICE"
+            # wait for service to die
+            for ((i=0; i<20; i++)); do
+                if ! pkill -0 -x "$SERVICE"; then
+                    break
+                fi
+                sleep 0.1
+            done
         else
-            "$SERVICE" &
+            "$SERVICE" >/dev/null &
+            # wait for service to spawn
+            for ((i=0; i<20; i++)); do
+                if pkill -0 -x "$SERVICE"; then
+                    break
+                fi
+                sleep 0.1
+            done
         fi
-        # Give it a moment to start/stop before checking again
-        sleep 2
-        print_status
+        pkill -SIGRTMIN+10 -xf waybar;
         ;;
     *)
         echo "Usage: $0 {status|toggle}"
