@@ -6,6 +6,7 @@
     pkgs.brightnessctl
     pkgs.hypridle
     pkgs.hyprshot
+    pkgs.playerctl
     pkgs.wofi
   ];
 
