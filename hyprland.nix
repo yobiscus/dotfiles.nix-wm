@@ -7,6 +7,7 @@
     pkgs.hypridle
     pkgs.hyprshot
     pkgs.playerctl
+    pkgs.wl-clipboard
     pkgs.wofi
   ];
 
