@@ -322,12 +322,26 @@ window#waybar.empty #window {
  * Custom Lock
  * ----------------------------------------------------- */
 
-#custom-lock {
-    margin: 0px 13px 0px 0px;
-    padding:0px;
-    font-size:20px;
-    color: @iconcolor;
+#group-power {
+    background-color: @backgroundlight;
+    border-radius: 15px;
+    padding: 0px 10px;
+    margin: 5px 15px 0px 0px;
     opacity: 0.8;
+}
+
+#custom-power,
+#custom-hypridle,
+#custom-lock,
+#custom-sleep {
+    margin: 0px 13px 0px 0px;
+    padding: 0px;
+    font-size: 20px;
+    color: @iconcolor;
+}
+
+.power-item {
+    margin-left: 12px;
 }
 
 /* -----------------------------------------------------

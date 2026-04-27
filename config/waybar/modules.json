@@ -116,8 +116,25 @@
                      "hyprland/language"
               ]
        },
+       "group/power": {
+              "orientation": "inherit",
+              "drawer": {
+                     "transition-duration": 300,
+                     "children-class": "power-item",
+                     "transition-left-to-right": false
+              },
+              "modules": [
+                     "custom/power",
+                     "custom/lock",
+                     "custom/sleep"
+              ]
+       },
        "custom/empty": {
               "format": ""
+       },
+       "custom/power": {
+              "format": "",
+              "tooltip-format": "Power controls"
        },
        "custom/hypridle": {
               "format": "☀",
@@ -133,6 +150,11 @@
               "format": "",
               "on-click": "hyprctl dispatch exec hyprlock",
               "tooltip-format": "Lock screen"
+       },
+       "custom/sleep": {
+              "format": "",
+              "on-click": "~/.config/hypr/scripts/lock-and-sleep.sh",
+              "tooltip-format": "Lock and suspend"
        },
        "network": {
               "format": "{ifname}",
