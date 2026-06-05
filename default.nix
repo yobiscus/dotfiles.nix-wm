@@ -5,6 +5,7 @@
     ./hyprland.nix
     ./hyprlock.nix
     ./hyprpaper.nix
+    ./firefox.nix
     ./kitty.nix
     ./matugen.nix
     ./swaync.nix
