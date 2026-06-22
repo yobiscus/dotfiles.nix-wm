@@ -1,0 +1,12 @@
+#!/bin/bash
+#
+# To use gdm3 with hyprland, install this to /usr/local/bin/hyprland-launch,
+# and then create /usr/share/wayland-sessions/hyprland.desktop:
+#
+# [Desktop Entry]
+# Exec=/usr/local/bin/hyprland-launch
+# Name=Hyprland
+
+export PATH=/home/$USER/.nix-profile/bin:$PATH
+export XDG_DATA_DIRS=/home/$USER/.nix-profile/share:/nix/var/nix/profiles/default/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
+exec nixGL start-hyprland
