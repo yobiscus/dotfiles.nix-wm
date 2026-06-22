@@ -12,6 +12,11 @@
     ./waybar.nix
   ];
 
+  home.packages = [
+    pkgs.blueman
+    pkgs.bluez
+  ];
+
   home.pointerCursor = {
     gtk.enable = true;
     package = pkgs.bibata-cursors;
