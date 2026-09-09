@@ -82,10 +82,6 @@ window#waybar.empty #window {
     color: @primary;
 }
 
-#custom-herdr {
-    font-size: 14px;
-}
-
 #custom-herdr.blocked,
 #network.disconnected,
 #battery.critical,
@@ -129,6 +125,8 @@ window#waybar.empty #window {
     margin: 0;
 }
 
+#bluetooth,
+#network.wifi,
 #custom-hypridle,
 #custom-notification {
     font-size: 14px;
