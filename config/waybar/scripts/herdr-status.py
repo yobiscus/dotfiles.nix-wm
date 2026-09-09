@@ -16,7 +16,18 @@ STATUS_ICONS = {
     "blocked": "\uf071",
     "unknown": "\uf059",
 }
-SSH_OPTIONS = ("-o", "BatchMode=yes", "-o", "ConnectTimeout=2")
+SSH_OPTIONS = (
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=2",
+    "-o",
+    "ControlMaster=auto",
+    "-o",
+    "ControlPersist=60",
+    "-o",
+    "ControlPath=~/.ssh/herdr-%C",
+)
 HERDR = 'PATH="$HOME/.local/bin:$HOME/.nix-profile/bin:$PATH" herdr'
 
 

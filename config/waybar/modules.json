@@ -132,7 +132,7 @@
        "custom/herdr": {
               "return-type": "json",
               "exec": "~/.config/waybar/scripts/herdr-status.py",
-              "interval": 10,
+              "interval": 2,
               "escape": true
        },
        "custom/power": {
