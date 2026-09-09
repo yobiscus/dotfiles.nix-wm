@@ -15,6 +15,7 @@
   home.packages = [
     pkgs.blueman
     pkgs.bluez
+    pkgs.gimp
     pkgs.spotify
   ];
 
