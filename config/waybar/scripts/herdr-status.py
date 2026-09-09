@@ -12,7 +12,6 @@ ROBOT_ICON = "\uf544"
 STATUS_ICONS = {
     "working": "\uf110",
     "done": "\uf0f3",
-    "idle": "\u2022",
     "blocked": "\uf071",
     "unknown": "\uf059",
 }
@@ -118,12 +117,12 @@ def count_text(counts):
 
 def bar_text(counts):
     statuses = "  ".join(
-        f"{STATUS_ICONS[status]}\u2009{counts[status]}"
-        for status in STATUSES
+        f"{icon}\u2009{counts[status]}"
+        for status, icon in STATUS_ICONS.items()
         if counts[status]
     )
     detail = f"<span size='small' weight='normal'>\u2009\u2009{statuses}</span>" if statuses else ""
-    return f"{ROBOT_ICON}{detail}"
+    return f"{ROBOT_ICON}\u2009{sum(counts.values())}{detail}"
 
 
 def render(counts, machines, reachable):
