@@ -129,6 +129,12 @@
        "custom/empty": {
               "format": ""
        },
+       "custom/herdr": {
+              "return-type": "json",
+              "exec": "~/.config/waybar/scripts/herdr-status.py",
+              "interval": 10,
+              "escape": true
+       },
        "custom/power": {
               "format": "",
               "tooltip-format": "Power controls"
