@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import fcntl
 import json
 import shlex
 import subprocess
@@ -28,6 +29,11 @@ SSH_OPTIONS = (
     "ControlPath=~/.ssh/herdr-%C",
 )
 HERDR = 'PATH="$HOME/.local/bin:$HOME/.nix-profile/bin:$PATH" herdr'
+CACHE_PATH = Path.home() / ".cache/waybar/herdr-status.json"
+
+# Only the default session is considered. If more sessions are needed, use a
+# static list or a cached discovery list that updates much less frequently.
+SESSION = "default"
 
 
 def command_json(target, command):
@@ -73,39 +79,24 @@ def collect(path, fetch=command_json):
     reachable = 0
 
     for label, target in [("local", None), *inventories(path)]:
-        listing = fetch(target, "session list --json")
-        if not isinstance(listing, dict) or not isinstance(listing.get("sessions"), list):
+        response = fetch(target, f"--session {SESSION} agent list")
+        try:
+            agents = response["result"]["agents"]
+            if not isinstance(agents, list):
+                raise TypeError
+        except (KeyError, TypeError):
             machines.append((label, None))
             continue
 
         reachable += 1
-        sessions = []
-        for session in listing["sessions"]:
-            if (
-                not isinstance(session, dict)
-                or not session.get("running")
-                or not isinstance(session.get("name"), str)
-            ):
-                continue
-            name = session["name"]
-            response = fetch(target, f"--session {shlex.quote(name)} api snapshot")
-            try:
-                agents = response["result"]["snapshot"]["agents"]
-                if not isinstance(agents, list):
-                    raise TypeError
-            except (KeyError, TypeError):
-                sessions.append((name, None))
-                continue
-
-            session_counts = Counter(
-                agent.get("agent_status", "unknown")
-                if isinstance(agent, dict) and agent.get("agent_status") in STATUSES
-                else "unknown"
-                for agent in agents
-            )
-            counts.update(session_counts)
-            sessions.append((name, session_counts))
-        machines.append((label, sessions))
+        session_counts = Counter(
+            agent.get("agent_status", "unknown")
+            if isinstance(agent, dict) and agent.get("agent_status") in STATUSES
+            else "unknown"
+            for agent in agents
+        )
+        counts.update(session_counts)
+        machines.append((label, [(SESSION, session_counts)]))
 
     return counts, machines, reachable
 
@@ -148,9 +139,35 @@ def render(counts, machines, reachable):
     }
 
 
+def read_cache(path):
+    try:
+        value = json.loads(path.read_text())
+        return value if isinstance(value, dict) else None
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        return None
+
+
+def refresh(inventory_dir, cache_path=CACHE_PATH, fetch=command_json):
+    cache_path.parent.mkdir(parents=True, exist_ok=True)
+    with cache_path.with_suffix(".lock").open("w") as lock:
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return read_cache(cache_path) or render(Counter(), [], 0)
+
+        result = render(*collect(inventory_dir, fetch))
+        temporary = cache_path.with_suffix(".tmp")
+        try:
+            temporary.write_text(json.dumps(result, separators=(",", ":")))
+            temporary.replace(cache_path)
+        except OSError:
+            pass
+        return result
+
+
 def main():
     inventory_dir = Path.home() / ".config/herdr/waybar"
-    print(json.dumps(render(*collect(inventory_dir)), separators=(",", ":")))
+    print(json.dumps(refresh(inventory_dir), separators=(",", ":")))
 
 
 if __name__ == "__main__":

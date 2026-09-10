@@ -26,7 +26,7 @@
     "custom/herdr": {
         "return-type": "json",
         "exec": "~/.config/waybar/scripts/herdr-status.py",
-        "interval": 2,
+        "interval": 10,
         "escape": false
     },
     "pulseaudio": {
