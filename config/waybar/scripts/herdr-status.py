@@ -4,7 +4,6 @@ import fcntl
 import json
 import shlex
 import subprocess
-import tomllib
 from collections import Counter
 from pathlib import Path
 
@@ -31,10 +30,6 @@ SSH_OPTIONS = (
 HERDR = 'PATH="$HOME/.local/bin:$HOME/.nix-profile/bin:$PATH" herdr'
 CACHE_PATH = Path.home() / ".cache/waybar/herdr-status.json"
 
-# Only the default session is considered. If more sessions are needed, use a
-# static list or a cached discovery list that updates much less frequently.
-SESSION = "default"
-
 
 def command_json(target, command):
     if target is None:
@@ -54,32 +49,38 @@ def command_json(target, command):
         return None
 
 
-def inventories(path):
-    for inventory in sorted(path.glob("*.toml")):
-        try:
-            data = tomllib.loads(inventory.read_text())
-        except (OSError, tomllib.TOMLDecodeError):
+def machine_catalog(fetch=command_json):
+    response = fetch(None, "machine list --json")
+    if not isinstance(response, list):
+        return None
+
+    machines = []
+    for machine in response:
+        if not isinstance(machine, dict) or not machine.get("enabled"):
             continue
-        machines = data.get("machine", [])
-        if not isinstance(machines, list):
+        machine_id = machine.get("id")
+        target = machine.get("target")
+        session = machine.get("session", "default")
+        label = machine.get("label", target)
+        fields = (machine_id, label, target, session)
+        if not all(isinstance(value, str) and value for value in fields):
             continue
-        for machine in machines:
-            if not isinstance(machine, dict):
-                continue
-            target = machine.get("ssh_target")
-            if not isinstance(target, str):
-                continue
-            if isinstance(machine.get("label", target), str):
-                yield machine.get("label", target), target
+        machines.append((machine_id, label, target, session))
+    return machines
 
 
-def collect(path, fetch=command_json):
+def collect(fetch=command_json):
+    remotes = machine_catalog(fetch)
+    if remotes is None:
+        return None
+
     counts = Counter()
     machines = []
     reachable = 0
 
-    for label, target in [("local", None), *inventories(path)]:
-        response = fetch(target, f"--session {SESSION} agent list")
+    targets = [("local", "local", None, "default"), *remotes]
+    for _machine_id, label, target, session in targets:
+        response = fetch(target, f"--session {shlex.quote(session)} agent list")
         try:
             agents = response["result"]["agents"]
             if not isinstance(agents, list):
@@ -96,7 +97,7 @@ def collect(path, fetch=command_json):
             for agent in agents
         )
         counts.update(session_counts)
-        machines.append((label, [(SESSION, session_counts)]))
+        machines.append((label, [(session, session_counts)]))
 
     return counts, machines, reachable
 
@@ -147,7 +148,7 @@ def read_cache(path):
         return None
 
 
-def refresh(inventory_dir, cache_path=CACHE_PATH, fetch=command_json):
+def refresh(cache_path=CACHE_PATH, fetch=command_json):
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     with cache_path.with_suffix(".lock").open("w") as lock:
         try:
@@ -155,7 +156,11 @@ def refresh(inventory_dir, cache_path=CACHE_PATH, fetch=command_json):
         except BlockingIOError:
             return read_cache(cache_path) or render(Counter(), [], 0)
 
-        result = render(*collect(inventory_dir, fetch))
+        collected = collect(fetch)
+        if collected is None:
+            return read_cache(cache_path) or render(Counter(), [], 0)
+
+        result = render(*collected)
         temporary = cache_path.with_suffix(".tmp")
         try:
             temporary.write_text(json.dumps(result, separators=(",", ":")))
@@ -166,8 +171,7 @@ def refresh(inventory_dir, cache_path=CACHE_PATH, fetch=command_json):
 
 
 def main():
-    inventory_dir = Path.home() / ".config/herdr/waybar"
-    print(json.dumps(refresh(inventory_dir), separators=(",", ":")))
+    print(json.dumps(refresh(), separators=(",", ":")))
 
 
 if __name__ == "__main__":
