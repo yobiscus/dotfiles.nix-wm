@@ -2,8 +2,10 @@
 
 import fcntl
 import json
+import os
 import shlex
 import subprocess
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -29,6 +31,17 @@ SSH_OPTIONS = (
 )
 HERDR = 'PATH="$HOME/.local/bin:$HOME/.nix-profile/bin:$PATH" herdr'
 CACHE_PATH = Path.home() / ".cache/waybar/herdr-status.json"
+STATE_PATH = (
+    Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state"))
+    / "waybar/herdr-status-polling.json"
+)
+LOCAL_MACHINE = {
+    "id": "local",
+    "label": "local",
+    "target": None,
+    "session": "default",
+    "enabled": True,
+}
 
 
 def command_json(target, command):
@@ -56,30 +69,47 @@ def machine_catalog(fetch=command_json):
 
     machines = []
     for machine in response:
-        if not isinstance(machine, dict) or not machine.get("enabled"):
+        if not isinstance(machine, dict):
             continue
         machine_id = machine.get("id")
         target = machine.get("target")
         session = machine.get("session", "default")
         label = machine.get("label", target)
+        enabled = machine.get("enabled")
         fields = (machine_id, label, target, session)
-        if not all(isinstance(value, str) and value for value in fields):
+        if not all(isinstance(value, str) and value for value in fields) or not isinstance(
+            enabled, bool
+        ):
             continue
-        machines.append((machine_id, label, target, session))
+        machines.append(
+            {
+                "id": machine_id,
+                "label": label,
+                "target": target,
+                "session": session,
+                "enabled": enabled,
+            }
+        )
     return machines
 
 
-def collect(fetch=command_json):
-    remotes = machine_catalog(fetch)
-    if remotes is None:
-        return None
-
+def collect(remotes, disabled, fetch=command_json):
     counts = Counter()
     machines = []
     reachable = 0
 
-    targets = [("local", "local", None, "default"), *remotes]
-    for _machine_id, label, target, session in targets:
+    for machine in [LOCAL_MACHINE, *remotes]:
+        machine_id = machine["id"]
+        label = machine["label"]
+        target = machine["target"]
+        session = machine["session"]
+        if machine_id in disabled:
+            machines.append((label, "polling disabled"))
+            continue
+        if not machine["enabled"]:
+            machines.append((label, "disabled in Herdr"))
+            continue
+
         response = fetch(target, f"--session {shlex.quote(session)} agent list")
         try:
             agents = response["result"]["agents"]
@@ -118,13 +148,16 @@ def bar_text(counts):
 
 
 def render(counts, machines, reachable):
-    if not reachable:
-        return {"text": "", "tooltip": "Herdr: no reachable machines", "class": "unavailable"}
-
     priority = ("blocked", "done", "working", "unknown", "idle")
-    css_class = next((status for status in priority if counts[status]), "idle")
+    if not reachable and any(not isinstance(state, str) for _, state in machines):
+        css_class = "unavailable"
+    else:
+        css_class = next((status for status in priority if counts[status]), "idle")
     lines = [f"Herdr: {count_text(counts)}"]
     for label, sessions in machines:
+        if isinstance(sessions, str):
+            lines.append(f"  {label}: {sessions}")
+            continue
         if sessions is None:
             lines.append(f"  {label}: unavailable")
             continue
@@ -148,7 +181,85 @@ def read_cache(path):
         return None
 
 
-def refresh(cache_path=CACHE_PATH, fetch=command_json):
+def read_disabled(path=STATE_PATH):
+    try:
+        value = json.loads(path.read_text())
+        disabled = value.get("disabled", [])
+        if not isinstance(disabled, list):
+            return set()
+        return {machine_id for machine_id in disabled if isinstance(machine_id, str)}
+    except (AttributeError, OSError, UnicodeError, json.JSONDecodeError):
+        return set()
+
+
+def write_disabled(path, disabled):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps({"disabled": sorted(disabled)}, separators=(",", ":")))
+    temporary.replace(path)
+
+
+def reconcile_disabled(remotes, state_path=STATE_PATH):
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    with state_path.with_suffix(".lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        disabled = read_disabled(state_path)
+        known = {LOCAL_MACHINE["id"], *(machine["id"] for machine in remotes)}
+        reconciled = disabled & known
+        if reconciled != disabled:
+            write_disabled(state_path, reconciled)
+        return reconciled
+
+
+def choose_machine(entries):
+    try:
+        result = subprocess.run(
+            ("wofi", "--dmenu", "--prompt", "Herdr polling"),
+            input="\n".join(entries),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    return result.stdout.rstrip("\n") if result.returncode == 0 else None
+
+
+def polling_menu(state_path=STATE_PATH, fetch=command_json, choose=choose_machine):
+    remotes = machine_catalog(fetch)
+    if remotes is None:
+        return False
+
+    disabled = reconcile_disabled(remotes, state_path)
+    machines = [LOCAL_MACHINE, *(machine for machine in remotes if machine["enabled"])]
+    selections = {}
+    for machine in machines:
+        marker = "○" if machine["id"] in disabled else "●"
+        if machine["target"] is None:
+            detail = "local"
+        else:
+            detail = f"{machine['target']}/{machine['session']}"
+        entry = f"{marker} {machine['label']} — {detail} [{machine['id'][:8]}]"
+        selections[entry] = machine["id"]
+
+    selected = choose(list(selections))
+    if selected not in selections:
+        return False
+
+    machine_id = selections[selected]
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    with state_path.with_suffix(".lock").open("w") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        disabled = read_disabled(state_path)
+        if machine_id in disabled:
+            disabled.remove(machine_id)
+        else:
+            disabled.add(machine_id)
+        write_disabled(state_path, disabled)
+    return True
+
+
+def refresh(cache_path=CACHE_PATH, state_path=STATE_PATH, fetch=command_json):
     cache_path.parent.mkdir(parents=True, exist_ok=True)
     with cache_path.with_suffix(".lock").open("w") as lock:
         try:
@@ -156,10 +267,12 @@ def refresh(cache_path=CACHE_PATH, fetch=command_json):
         except BlockingIOError:
             return read_cache(cache_path) or render(Counter(), [], 0)
 
-        collected = collect(fetch)
-        if collected is None:
+        remotes = machine_catalog(fetch)
+        if remotes is None:
             return read_cache(cache_path) or render(Counter(), [], 0)
 
+        disabled = reconcile_disabled(remotes, state_path)
+        collected = collect(remotes, disabled, fetch)
         result = render(*collected)
         temporary = cache_path.with_suffix(".tmp")
         try:
@@ -171,7 +284,12 @@ def refresh(cache_path=CACHE_PATH, fetch=command_json):
 
 
 def main():
-    print(json.dumps(refresh(), separators=(",", ":")))
+    if sys.argv[1:] == ["menu"]:
+        polling_menu()
+    elif sys.argv[1:]:
+        raise SystemExit(f"usage: {Path(sys.argv[0]).name} [menu]")
+    else:
+        print(json.dumps(refresh(), separators=(",", ":")))
 
 
 if __name__ == "__main__":
