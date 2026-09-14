@@ -78,7 +78,7 @@
     },
     "image#cisco": {
         "exec": "~/.config/waybar/scripts/vpn-status.py cisco",
-        "size": 16,
+        "size": 20,
         "interval": 5
     },
     "image#pia": {
