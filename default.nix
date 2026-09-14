@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, gome, pkgs, ... }:
 
 {
   imports = [
@@ -13,6 +13,7 @@
   ];
 
   home.packages = [
+    (pkgs.callPackage gome { })
     pkgs.blueman
     pkgs.bluez
     pkgs.gimp

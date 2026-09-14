@@ -155,6 +155,15 @@
         "on-click-right": "swaync-client -d -sw",
         "escape": true
     },
+    "custom/gome": {
+        "return-type": "json",
+        "exec": "gome waybar",
+        "exec-on-event": true,
+        "interval": 15,
+        "signal": 9,
+        "on-click": "gome open",
+        "escape": true
+    },
     "clock": {
         "format": "{:%H:%M}",
         "tooltip-format": "<span font='JetBrainsMono Nerd Font 12'>{calendar}</span>",

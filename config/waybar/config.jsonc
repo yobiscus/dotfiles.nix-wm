@@ -16,6 +16,7 @@
     ],
     "modules-right": [
         "custom/herdr",
+        "custom/gome",
         "pulseaudio",
         "bluetooth",
         "network",

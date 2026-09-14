@@ -74,9 +74,38 @@ window#waybar.empty #window {
 #custom-hypridle,
 #group-power,
 #custom-notification,
+#custom-gome,
 #clock {
     padding: 0 6px;
     color: @on_surface_variant;
+}
+
+#custom-gome.idle {
+    padding: 0;
+}
+
+#custom-gome.spec {
+    color: @tertiary;
+}
+
+#custom-gome.deep {
+    color: @primary;
+}
+
+#custom-gome.review {
+    color: @secondary;
+}
+
+#custom-gome.misc {
+    color: @on_surface;
+}
+
+#custom-gome.meeting {
+    color: @outline;
+}
+
+#custom-gome.error {
+    color: @error;
 }
 
 #image {
