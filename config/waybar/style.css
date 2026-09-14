@@ -69,6 +69,7 @@ window#waybar.empty #window {
 #pulseaudio,
 #bluetooth,
 #network,
+#image,
 #battery,
 #custom-hypridle,
 #group-power,
@@ -76,6 +77,14 @@ window#waybar.empty #window {
 #clock {
     padding: 0 6px;
     color: @on_surface_variant;
+}
+
+#image {
+    padding: 0 2px;
+}
+
+#image.empty {
+    padding: 0;
 }
 
 #custom-herdr.done {

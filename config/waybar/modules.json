@@ -71,6 +71,21 @@
         "on-click": "~/.dotfiles/wm/scripts/networkmanager.sh",
         "on-click-right": "~/.config/ml4w/scripts/nm-applet.sh toggle"
     },
+    "image#tailscale": {
+        "exec": "~/.config/waybar/scripts/vpn-status.py tailscale",
+        "size": 16,
+        "interval": 5
+    },
+    "image#cisco": {
+        "exec": "~/.config/waybar/scripts/vpn-status.py cisco",
+        "size": 16,
+        "interval": 5
+    },
+    "image#pia": {
+        "exec": "~/.config/waybar/scripts/vpn-status.py pia",
+        "size": 16,
+        "interval": 5
+    },
     "battery": {
         "interval": 1,
         "states": {

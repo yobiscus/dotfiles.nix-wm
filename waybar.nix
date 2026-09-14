@@ -20,6 +20,16 @@
       source = ./config/waybar/scripts/herdr-status.py;
       executable = true;
     };
+    ".config/waybar/scripts/vpn-status.py" = {
+      source = ./config/waybar/scripts/vpn-status.py;
+      executable = true;
+    };
+    ".config/waybar/assets/tailscale.svg".source =
+      ./config/waybar/assets/tailscale.svg;
+    ".config/waybar/assets/cisco.svg".source =
+      ./config/waybar/assets/cisco.svg;
+    ".config/waybar/assets/pia.svg".source =
+      ./config/waybar/assets/pia.svg;
     ".config/waybar/style.css".source = ./config/waybar/style.css;
     # colors.css is modified by Mutagen, so it has to be writable
     ".config/waybar/colors.css".source =
