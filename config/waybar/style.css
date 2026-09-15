@@ -76,11 +76,13 @@ window#waybar.empty #window {
 #custom-notification,
 #custom-gome,
 #clock {
-    padding: 0 6px;
+    margin: 0 6px;
+    padding: 0;
     color: @on_surface_variant;
 }
 
 #custom-gome.idle {
+    margin: 0;
     padding: 0;
 }
 
@@ -108,11 +110,8 @@ window#waybar.empty #window {
     color: @error;
 }
 
-#image {
-    padding: 0 2px;
-}
-
 #image.empty {
+    margin: 0;
     padding: 0;
 }
 
@@ -128,6 +127,7 @@ window#waybar.empty #window {
 }
 
 #custom-herdr.unavailable {
+    margin: 0;
     padding: 0;
 }
 
@@ -147,14 +147,14 @@ window#waybar.empty #window {
 }
 
 #group-power {
-    padding: 0 2px;
+    padding: 0;
 }
 
 #custom-power,
 #custom-lock,
 #custom-sleep {
-    min-width: 20px;
-    padding: 0 3px;
+    min-width: 24px;
+    padding: 0;
     color: @on_surface_variant;
     font-size: 14px;
 }
@@ -171,7 +171,7 @@ window#waybar.empty #window {
 }
 
 #clock {
-    padding-right: 2px;
+    margin-right: 0;
     color: @on_surface;
 }
 
