@@ -8,9 +8,10 @@
       positionY = "top";
       layer = "overlay";
       cssPriority = "user";
+      ignore-gtk-theme = true;
 
       control-center-width = 360;
-      control-center-height = 700;
+      control-center-height = -1;
       control-center-margin-top = 11;
       control-center-margin-right = 3;
       control-center-margin-left = 0;
@@ -26,6 +27,8 @@
 
       fit-to-screen = false;
       keyboard-shortcuts = true;
+      notification-grouping = true;
+      relative-timestamps = true;
       image-visibility = "when-available";
       transition-time = 200;
       hide-on-clear = true;
@@ -33,7 +36,11 @@
       script-fail-notify = true;
       scripts = {};
       notification-visibility = {
-        example-name = {
+        insync = {
+          state = "ignored";
+          app-name = "(?i)^insync$";
+        };
+        spotify = {
           state = "muted";
           urgency = "Normal";
           app-name = "Spotify";
@@ -49,6 +56,9 @@
         "notifications"
       ];
       widget-config = {
+        notifications = {
+          vexpand = false;
+        };
         dnd = {
           text = "Do not Disturb";
         };
@@ -68,13 +78,14 @@
           label = "";
         };
         buttons-grid = {
+          buttons-per-row = 4;
           actions = [
             {
               label = "";
               type = "toggle";
               active = true;
-              command = "sh -c '[[ $SWAYNC_TOGGLE_STATE == true ]] && nmcli radio wifi on || nmcli radio wifi off'";
-              update-command = "sh -c '[[ $(nmcli r wifi) == \"enabled\" ]] && echo true || echo false'";
+              command = "sh -c '[ \"$SWAYNC_TOGGLE_STATE\" = true ] && nmcli radio wifi on || nmcli radio wifi off'";
+              update-command = "sh -c '[ \"$(nmcli r wifi)\" = enabled ] && echo true || echo false'";
             }
             {
               label = "";

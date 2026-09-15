@@ -1,1 +1,196 @@
-@import "themes/glass/style.css";
+@import "colors.css";
+
+* {
+    min-height: 0;
+    border: none;
+    font-family: "Fira Sans", sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+notificationwindow,
+blankwindow,
+.floating-notifications {
+    background: transparent;
+}
+
+.control-center {
+    min-height: 0;
+    background: alpha(@surface_container, 0.98);
+    border: 1px solid alpha(@outline_variant, 0.8);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 8px 24px alpha(@shadow, 0.35);
+}
+
+.control-center .control-center-list,
+.widget-notifications {
+    min-height: 0;
+}
+
+.control-center .control-center-list .notification-group,
+.control-center .control-center-list .notification-row,
+.control-center .control-center-list .notification-background {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.widget {
+    background: alpha(@surface_container_high, 0.7);
+    border: 1px solid alpha(@outline_variant, 0.55);
+    border-radius: 8px;
+    margin: 0 0 8px;
+    padding: 10px;
+}
+
+.widget-title {
+    background: transparent;
+    border: none;
+    margin: 0;
+    padding: 2px 0 10px;
+}
+
+.widget-title > label {
+    color: @on_surface;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.widget-title > button,
+.close-button {
+    background: alpha(@on_surface, 0.1);
+    border: 1px solid alpha(@outline_variant, 0.6);
+    border-radius: 6px;
+    color: @on_surface;
+    padding: 4px 8px;
+}
+
+.widget-title > button:hover,
+.close-button:hover {
+    background: alpha(@on_surface, 0.18);
+}
+
+.widget-dnd,
+.widget-buttons-grid,
+.widget-volume,
+.widget-backlight,
+.widget-mpris {
+    background: transparent;
+    border: none;
+    padding: 0 0 8px;
+}
+
+.widget-volume scale trough,
+.widget-backlight scale trough {
+    background: alpha(@outline_variant, 0.7);
+    border-radius: 3px;
+    min-height: 4px;
+}
+
+.widget-volume scale highlight,
+.widget-backlight scale highlight {
+    background: @primary;
+    border-radius: 3px;
+    min-height: 4px;
+}
+
+.widget-volume scale slider,
+.widget-backlight scale slider {
+    background: @on_surface;
+    border: 2px solid @primary;
+    border-radius: 50%;
+    min-height: 14px;
+    min-width: 14px;
+}
+
+.widget-buttons-grid flowboxchild > button {
+    background: alpha(@surface_container_highest, 0.7);
+    border: 1px solid alpha(@outline_variant, 0.55);
+    border-radius: 7px;
+    color: @on_surface_variant;
+    padding: 8px 12px;
+}
+
+.widget-buttons-grid flowboxchild > button:hover,
+.widget-buttons-grid flowboxchild > button.toggle:checked {
+    background: @primary_container;
+    color: @on_primary_container;
+}
+
+.notification-row {
+    background: transparent;
+    outline: none;
+}
+
+.notification-row .notification-background {
+    padding: 4px 0;
+}
+
+.notification-row .notification-background .notification {
+    background: alpha(@surface_container_high, 0.96);
+    border: 1px solid alpha(@outline_variant, 0.65);
+    border-radius: 8px;
+}
+
+.notification-row .notification-background .notification.low {
+    background: alpha(@surface_container_low, 0.9);
+    border-color: alpha(@outline_variant, 0.4);
+}
+
+.notification-row .notification-background .notification.critical {
+    background: alpha(@error_container, 0.72);
+    border-color: @error;
+}
+
+.notification-row .notification-background .notification .notification-default-action {
+    background: transparent;
+    border-radius: 8px;
+    color: @on_surface;
+    padding: 8px;
+}
+
+.notification-row .notification-background .notification .notification-default-action:hover {
+    background: alpha(@on_surface, 0.08);
+}
+
+.notification-content .image {
+    -gtk-icon-size: 40px;
+    margin: 4px 8px 4px 4px;
+}
+
+.notification-content .app-icon {
+    -gtk-icon-size: 14px;
+}
+
+.notification-content .summary {
+    color: @on_surface;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.notification-content .body {
+    color: @on_surface_variant;
+    font-size: 12px;
+}
+
+.notification-content .time {
+    color: @outline;
+    font-size: 11px;
+}
+
+.notification-content progressbar {
+    margin-top: 4px;
+}
+
+.notification-alt-actions .notification-action > button {
+    background: alpha(@on_surface, 0.08);
+    border-radius: 6px;
+    color: @on_surface;
+    margin: 4px;
+    padding: 5px 8px;
+}
+
+.notification-group.collapsed.not-expanded {
+    opacity: 0.55;
+}
