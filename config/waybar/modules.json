@@ -108,33 +108,6 @@
         "exec": "~/.config/hypr/scripts/hypridle.sh status",
         "on-click": "~/.config/hypr/scripts/hypridle.sh toggle"
     },
-    "group/power": {
-        "orientation": "inherit",
-        "drawer": {
-            "transition-duration": 200,
-            "children-class": "power-item",
-            "transition-left-to-right": false
-        },
-        "modules": [
-            "custom/power",
-            "custom/lock",
-            "custom/sleep"
-        ]
-    },
-    "custom/power": {
-        "format": "",
-        "tooltip-format": "Power controls"
-    },
-    "custom/lock": {
-        "format": "",
-        "on-click": "hyprctl dispatch exec hyprlock",
-        "tooltip-format": "Lock screen"
-    },
-    "custom/sleep": {
-        "format": "",
-        "on-click": "~/.config/hypr/scripts/lock-and-sleep.sh",
-        "tooltip-format": "Lock and suspend"
-    },
     "custom/notification": {
         "tooltip-format": "Left: Notifications\nRight: Do not disturb",
         "format": "{icon}",

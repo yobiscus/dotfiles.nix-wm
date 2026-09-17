@@ -78,14 +78,14 @@
           label = "";
         };
         buttons-grid = {
-          buttons-per-row = 4;
+          buttons-per-row = 5;
           actions = [
             {
               label = "";
               type = "toggle";
               active = true;
-              command = "sh -c '[ \"$SWAYNC_TOGGLE_STATE\" = true ] && nmcli radio wifi on || nmcli radio wifi off'";
-              update-command = "sh -c '[ \"$(nmcli r wifi)\" = enabled ] && echo true || echo false'";
+              command = "test $SWAYNC_TOGGLE_STATE = true && nmcli radio wifi on || nmcli radio wifi off";
+              update-command = "test $(nmcli radio wifi) = enabled && echo true || echo false";
             }
             {
               label = "";
@@ -104,6 +104,10 @@
             {
               label = "";
               command = "hyprlock";
+            }
+            {
+              label = "";
+              command = "${config.home.homeDirectory}/.config/hypr/scripts/lock-and-sleep.sh";
             }
           ];
         };

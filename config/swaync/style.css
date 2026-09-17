@@ -81,6 +81,10 @@ blankwindow,
     padding: 0 0 8px;
 }
 
+.widget-buttons-grid flowbox {
+    padding: 0 3px;
+}
+
 .widget-volume scale trough,
 .widget-backlight scale trough {
     background: alpha(@outline_variant, 0.7);
@@ -109,11 +113,18 @@ blankwindow,
     border: 1px solid alpha(@outline_variant, 0.55);
     border-radius: 7px;
     color: @on_surface_variant;
+    font-family: "Font Awesome 7 Free", "Font Awesome 6 Free", FontAwesome, sans-serif;
+    font-size: 16px;
     padding: 8px 12px;
 }
 
+.widget-buttons-grid flowboxchild:first-child > button > label {
+    margin-right: 7px;
+}
+
 .widget-buttons-grid flowboxchild > button:hover,
-.widget-buttons-grid flowboxchild > button.toggle:checked {
+.widget-buttons-grid flowboxchild > button.toggle:checked,
+.widget-buttons-grid flowboxchild > button.active {
     background: @primary_container;
     color: @on_primary_container;
 }
