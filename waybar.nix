@@ -24,6 +24,10 @@
       source = ./config/waybar/scripts/vpn-status.py;
       executable = true;
     };
+    ".config/waybar/scripts/webex-unread.py" = {
+      source = ./config/waybar/scripts/webex-unread.py;
+      executable = true;
+    };
     ".config/waybar/assets/tailscale.svg".source =
       ./config/waybar/assets/tailscale.svg;
     ".config/waybar/assets/cisco.svg".source =

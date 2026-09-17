@@ -26,6 +26,7 @@
         "battery",
         "custom/hypridle",
         "group/power",
+        "group/webex",
         "custom/notification",
         "clock"
     ]

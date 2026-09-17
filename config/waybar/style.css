@@ -110,6 +110,36 @@ window#waybar.empty #window {
     color: @error;
 }
 
+#group-webex {
+    margin: 0;
+    padding: 0;
+}
+
+#group-webex #image {
+    margin: 0 3px 0 6px;
+    padding: 0;
+}
+
+#custom-webex {
+    margin: 0 6px 0 0;
+    padding: 0;
+}
+
+#custom-webex.unread {
+    color: @on_surface;
+}
+
+#custom-webex.error {
+    color: @error;
+}
+
+#group-webex #image.empty,
+#custom-webex.hidden,
+#custom-webex.read {
+    margin: 0;
+    padding: 0;
+}
+
 #image.empty {
     margin: 0;
     padding: 0;

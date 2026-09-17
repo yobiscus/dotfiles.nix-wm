@@ -155,6 +155,28 @@
         "on-click-right": "swaync-client -d -sw",
         "escape": true
     },
+    "group/webex": {
+        "orientation": "horizontal",
+        "modules": [
+            "image#webex",
+            "custom/webex"
+        ]
+    },
+    "image#webex": {
+        "exec": "~/.config/waybar/scripts/webex-unread.py icon",
+        "size": 17,
+        "interval": 10,
+        "on-click": "hyprctl dispatch togglespecialworkspace im"
+    },
+    "custom/webex": {
+        "return-type": "json",
+        "exec": "~/.config/waybar/scripts/webex-unread.py",
+        "exec-on-event": false,
+        "interval": 10,
+        "hide-empty-text": true,
+        "on-click": "hyprctl dispatch togglespecialworkspace im",
+        "escape": true
+    },
     "custom/gome": {
         "return-type": "json",
         "exec": "gome waybar",
