@@ -24,7 +24,7 @@
         "image#cisco",
         "image#pia",
         "battery",
-        "custom/hypridle",
+        "idle_inhibitor",
         "group/webex",
         "custom/notification",
         "clock"

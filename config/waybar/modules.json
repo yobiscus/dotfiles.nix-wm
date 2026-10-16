@@ -98,15 +98,10 @@
         "format-alt": "{icon} {time}",
         "format-icons": ["", "", "", "", ""]
     },
-    "custom/hypridle": {
+    "idle_inhibitor": {
         "format": "",
-        "return-type": "json",
-        "escape": true,
-        "interval": 60,
-        "signal": 10,
-        "exec-on-event": false,
-        "exec": "~/.config/hypr/scripts/hypridle.sh status",
-        "on-click": "~/.config/hypr/scripts/hypridle.sh toggle"
+        "tooltip-format-activated": "Idle actions paused; battery auto-suspend and locking on sleep remain active",
+        "tooltip-format-deactivated": "Idle actions active"
     },
     "custom/notification": {
         "tooltip-format": "Left: Notifications\nRight: Do not disturb",

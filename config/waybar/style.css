@@ -71,7 +71,7 @@ window#waybar.empty #window {
 #network,
 #image,
 #battery,
-#custom-hypridle,
+#idle_inhibitor,
 #custom-notification,
 #custom-gome,
 #clock {
@@ -151,7 +151,7 @@ window#waybar.empty #window {
 #custom-herdr.blocked,
 #network.disconnected,
 #battery.critical,
-#custom-hypridle.notactive {
+#idle_inhibitor.activated {
     color: @error;
 }
 
@@ -177,7 +177,7 @@ window#waybar.empty #window {
 
 #bluetooth,
 #network.wifi,
-#custom-hypridle,
+#idle_inhibitor,
 #custom-notification {
     font-size: 14px;
 }
