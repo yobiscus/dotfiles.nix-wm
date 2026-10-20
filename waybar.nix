@@ -6,7 +6,6 @@
     pkgs.font-awesome
     pkgs.material-icons
     pkgs.pavucontrol
-    pkgs.python3
   ];
 
   programs.waybar = {
