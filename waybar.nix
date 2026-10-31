@@ -1,4 +1,4 @@
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   home.packages = [
@@ -10,6 +10,22 @@
 
   programs.waybar = {
     enable = true;
+    package = pkgs.waybar.overrideAttrs (old: {
+      # Backport https://github.com/Alexays/Waybar/pull/5013 until the next release.
+      patches = (old.patches or []) ++ lib.optionals (old.version == "0.15.0") [
+        (pkgs.fetchpatch {
+          url = "https://github.com/Alexays/Waybar/commit/e17c0d9f0a73acc370df60ec8c532b1ed2385c73.patch";
+          # Native workspace scrolling was added after 0.15.0; our scroll binds use Lua already.
+          excludes = [ "src/modules/hyprland/workspaces.cpp" ];
+          hash = "sha256-QsPcxs6B8YPIPE3IzBuxER+12Ur+3JoshouDm/3T3xE=";
+        })
+      ];
+      postPatch = (old.postPatch or "") + lib.optionalString (old.version == "0.15.0") ''
+        # Use the current Lua selector for the move-to-monitor click variant.
+        substituteInPlace src/modules/hyprland/backend.cpp \
+          --replace-fail 'monitor = \"current\"' 'on_current_monitor = true'
+      '';
+    });
   };
 
   home.file = {
