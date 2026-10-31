@@ -14,8 +14,8 @@
         "format": ""
     },
     "hyprland/workspaces": {
-        "on-scroll-up": "hyprctl dispatch workspace r-1",
-        "on-scroll-down": "hyprctl dispatch workspace r+1",
+        "on-scroll-up": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"r-1\" })'",
+        "on-scroll-down": "hyprctl dispatch 'hl.dsp.focus({ workspace = \"r+1\" })'",
         "on-click": "activate",
         "all-outputs": true,
         "format": "{}",
@@ -134,7 +134,7 @@
         "exec": "~/.config/waybar/scripts/webex-unread.py icon",
         "size": 17,
         "interval": 10,
-        "on-click": "hyprctl dispatch togglespecialworkspace im"
+        "on-click": "hyprctl dispatch 'hl.dsp.workspace.toggle_special(\"im\")'"
     },
     "custom/webex": {
         "return-type": "json",
@@ -142,7 +142,7 @@
         "exec-on-event": false,
         "interval": 10,
         "hide-empty-text": true,
-        "on-click": "hyprctl dispatch togglespecialworkspace im",
+        "on-click": "hyprctl dispatch 'hl.dsp.workspace.toggle_special(\"im\")'",
         "escape": true
     },
     "custom/gome": {

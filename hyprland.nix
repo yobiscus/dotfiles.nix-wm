@@ -13,8 +13,9 @@
 
   wayland.windowManager.hyprland = {
     enable = true;
+    configType = "lua";
     extraConfig = ''
-      source = ~/.config/hypr/conf/main.conf
+      require("conf.main")
     '';
   };
 
@@ -24,6 +25,10 @@
   home.file.".config/hypr/colors-matugen.conf".source =
     config.lib.file.mkOutOfStoreSymlink
     "${config.home.homeDirectory}/.dotfiles/config/home-manager/modules/wm/config/hypr/colors-matugen.conf";
+
+  home.file.".config/hypr/colors-matugen.lua".source =
+    config.lib.file.mkOutOfStoreSymlink
+    "${config.home.homeDirectory}/.dotfiles/config/home-manager/modules/wm/config/hypr/colors-matugen.lua";
 
   home.file.".config/hypr/hypridle.conf".source = ./config/hypr/hypridle.conf;
 }

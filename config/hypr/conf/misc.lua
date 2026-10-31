@@ -1,0 +1,12 @@
+hl.config({
+    misc = {
+        disable_hyprland_logo = true,
+        disable_splash_rendering = true,
+        initial_workspace_tracking = 1,
+    },
+    xwayland = {
+        force_zero_scaling = true,
+    },
+})
+
+hl.env("MOZ_ENABLE_WAYLAND", "1")
