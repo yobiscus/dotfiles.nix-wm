@@ -7,6 +7,10 @@
 # Exec=/usr/local/bin/hyprland-launch
 # Name=Hyprland
 
+# Avoid NVIDIA hotplug SIGKILLs from Hyprland 0.57's realtime CPU limit.
+# Retry realtime after https://github.com/hyprwm/Hyprland/pull/16737 ships.
+export HYPRLAND_NO_RT=1
+
 export PATH=$HOME/.nix-profile/bin:$PATH
 export XDG_DATA_DIRS=$HOME/.nix-profile/share:/nix/var/nix/profiles/default/share:${XDG_DATA_DIRS:-/usr/local/share:/usr/share}
 exec nixGL start-hyprland
