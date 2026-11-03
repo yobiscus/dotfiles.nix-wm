@@ -8,7 +8,3 @@ hl.monitor({
     output = "desc:ViewSonic Corporation VX2778 Series ULY190760145",
     mode = "2560x1440", position = "1920x-1200", scale = 1,
 })
-
--- Laptop lid switches stay active while locked.
-hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd("~/.config/hypr/scripts/clamshell.sh close"), { locked = true })
-hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("~/.config/hypr/scripts/clamshell.sh open"), { locked = true })
