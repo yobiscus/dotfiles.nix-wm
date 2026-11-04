@@ -20,6 +20,13 @@
     pkgs.spotify
   ];
 
+  home.file.".config/wireplumber/main.lua.d/51-sof-headroom.lua" = {
+    source = ./config/wireplumber/main.lua.d/51-sof-headroom.lua;
+    onChange = ''
+      ${config.systemd.user.systemctlPath} --user try-restart wireplumber.service
+    '';
+  };
+
   home.pointerCursor = {
     enable = true;
     gtk.enable = true;
