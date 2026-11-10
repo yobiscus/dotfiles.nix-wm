@@ -62,7 +62,7 @@ def hide() -> None:
 
 def main() -> None:
     if len(sys.argv) != 2 or sys.argv[1] not in {"tailscale", "cisco", "pia"}:
-        raise SystemExit("usage: vpn-status.py {tailscale|cisco|pia}")
+        raise SystemExit("usage: vpn-status.py {tailscale|cisco|cscotun|pia}")
 
     provider = sys.argv[1]
 
@@ -78,7 +78,7 @@ def main() -> None:
     if provider == "cisco":
         ssid = active_ssid()
         cisco_vpn = any(
-            re.search(r"cisco|anyconnect", name, re.IGNORECASE) for name in connections
+            re.search(r"cisco|cscotun", name, re.IGNORECASE) for name in connections
         )
         cisco_wifi = ssid.casefold() in CISCO_SSIDS
         if not (cisco_vpn or cisco_wifi):
