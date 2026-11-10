@@ -18,6 +18,7 @@ hl.bind(mainMod .. " + C", hl.dsp.window.close())
 hl.bind(mainMod .. " + V", hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + P", hl.dsp.window.pseudo()) -- dwindle
 hl.bind(mainMod .. " + O", hl.dsp.layout("togglesplit")) -- dwindle
+hl.bind(mainMod .. " + I", hl.dsp.window.fullscreen({ action = "toggle" }))
 hl.bind(mainMod .. " + M", function() hl.config({ general = { layout = "monocle" } }) end)
 hl.bind(mainMod .. " + SHIFT + M", function() hl.config({ general = { layout = "dwindle" } }) end)
 hl.bind(mainMod .. " + Tab", hl.dsp.layout("cyclenext"))
