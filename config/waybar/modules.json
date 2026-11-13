@@ -25,8 +25,8 @@
     "custom/herdr": {
         "return-type": "json",
         "exec": "~/.config/waybar/scripts/herdr-status.py",
-        "exec-on-event": true,
-        "interval": 10,
+        "exec-on-event": false,
+        "restart-interval": 5,
         "on-click": "~/.config/waybar/scripts/herdr-status.py menu",
         "escape": false
     },

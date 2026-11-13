@@ -149,15 +149,13 @@ window#waybar.empty #window {
 }
 
 #custom-herdr.blocked,
+#custom-herdr.error,
+#custom-herdr.partial,
+#custom-herdr.unavailable,
 #network.disconnected,
 #battery.critical,
 #idle_inhibitor.activated {
     color: @error;
-}
-
-#custom-herdr.unavailable {
-    margin: 0;
-    padding: 0;
 }
 
 #battery.warning:not(.charging) {

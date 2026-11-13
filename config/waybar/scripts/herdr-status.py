@@ -1,296 +1,288 @@
 #!/usr/bin/env python3
+"""Stream Waybar JSON from local hc facts. Use --once for a single snapshot.
+
+Counts include workers. Completed turns already marked herdr.seen are idle;
+unseen completed turns are done. Machine exclusions affect the display only.
+Keep the old state filename so existing local exclusions survive the upgrade.
+"""
 
 import fcntl
+import html
 import json
 import os
-import shlex
+import selectors
+import shutil
+import signal
 import subprocess
 import sys
+import time
 from collections import Counter
 from pathlib import Path
 
-STATUSES = ("working", "done", "idle", "blocked", "unknown")
-ROBOT_ICON = "\uf544"
-STATUS_ICONS = {
-    "working": "\uf110",
-    "done": "\uf0f3",
-    "blocked": "\uf071",
-    "unknown": "\uf059",
-}
-SSH_OPTIONS = (
-    "-o",
-    "BatchMode=yes",
-    "-o",
-    "ConnectTimeout=2",
-    "-o",
-    "ControlMaster=auto",
-    "-o",
-    "ControlPersist=60",
-    "-o",
-    "ControlPath=~/.ssh/herdr-%C",
-)
-HERDR = 'PATH="$HOME/.local/bin:$HOME/.nix-profile/bin:$PATH" herdr'
-CACHE_PATH = Path.home() / ".cache/waybar/herdr-status.json"
+HC = shutil.which("hc") or str(Path.home() / ".local/bin/hc")
 STATE_PATH = (
     Path(os.environ.get("XDG_STATE_HOME", Path.home() / ".local/state"))
     / "waybar/herdr-status-polling.json"
 )
-LOCAL_MACHINE = {
-    "id": "local",
-    "label": "local",
-    "target": None,
-    "session": "default",
-    "enabled": True,
+STATUSES = ("working", "done", "idle", "blocked", "error", "unknown")
+STATUS_ICONS = {
+    "working": "\uf110",
+    "done": "\uf0f3",
+    "blocked": "\uf071",
+    "error": "\uf06a",
+    "unknown": "\uf059",
 }
+ROBOT_ICON = "\uf544"
+REFRESH_EVENTS = {
+    "created", "restarted", "finished", "lost", "removed", "status", "labels", "turn"
+}
+DEBOUNCE = 0.2
+RETRY_DELAY = 2
+STATE_INTERVAL = 1
+HEALTH_INTERVAL = 15
+EVENT_TIMEOUT = 45
 
 
-def command_json(target, command):
-    if target is None:
-        args = ("herdr", *shlex.split(command))
-    else:
-        args = ("ssh", *SSH_OPTIONS, "--", target, f"{HERDR} {command}")
-    try:
-        result = subprocess.run(
-            args,
-            capture_output=True,
-            check=True,
-            text=True,
-            timeout=5,
-        )
-        return json.loads(result.stdout)
-    except (OSError, UnicodeError, subprocess.SubprocessError, json.JSONDecodeError):
-        return None
-
-
-def machine_catalog(fetch=command_json):
-    response = fetch(None, "machine list --json")
-    if not isinstance(response, list):
-        return None
-
-    machines = []
-    for machine in response:
-        if not isinstance(machine, dict):
-            continue
-        machine_id = machine.get("id")
-        target = machine.get("target")
-        session = machine.get("session", "default")
-        label = machine.get("label", target)
-        enabled = machine.get("enabled")
-        fields = (machine_id, label, target, session)
-        if not all(isinstance(value, str) and value for value in fields) or not isinstance(
-            enabled, bool
-        ):
-            continue
-        machines.append(
-            {
-                "id": machine_id,
-                "label": label,
-                "target": target,
-                "session": session,
-                "enabled": enabled,
-            }
-        )
-    return machines
-
-
-def collect(remotes, disabled, fetch=command_json):
-    counts = Counter()
-    machines = []
-    reachable = 0
-
-    for machine in [LOCAL_MACHINE, *remotes]:
-        machine_id = machine["id"]
-        label = machine["label"]
-        target = machine["target"]
-        session = machine["session"]
-        if machine_id in disabled:
-            machines.append((label, "polling disabled"))
-            continue
-        if not machine["enabled"]:
-            machines.append((label, "disabled in Herdr"))
-            continue
-
-        response = fetch(target, f"--session {shlex.quote(session)} agent list")
-        try:
-            agents = response["result"]["agents"]
-            if not isinstance(agents, list):
-                raise TypeError
-        except (KeyError, TypeError):
-            machines.append((label, None))
-            continue
-
-        reachable += 1
-        session_counts = Counter(
-            agent.get("agent_status", "unknown")
-            if isinstance(agent, dict) and agent.get("agent_status") in STATUSES
-            else "unknown"
-            for agent in agents
-        )
-        counts.update(session_counts)
-        machines.append((label, [(session, session_counts)]))
-
-    return counts, machines, reachable
-
-
-def count_text(counts):
-    parts = [f"{counts[status]} {status}" for status in STATUSES if counts[status]]
-    return ", ".join(parts) or "no agents"
-
-
-def bar_text(counts):
-    statuses = "  ".join(
-        f"{icon}\u2009{counts[status]}"
-        for status, icon in STATUS_ICONS.items()
-        if counts[status]
+def core_snapshot():
+    # hc ls summarizes reports but omits labels; terminal.list includes seen turns.
+    request = {"jsonrpc": "2.0", "id": 1, "method": "terminal.list", "params": {}}
+    result = subprocess.run(
+        (HC, "connect"), input=json.dumps(request) + "\n",
+        capture_output=True, check=True, text=True, timeout=5,
     )
-    detail = f"<span size='small' weight='normal'>\u2009\u2009{statuses}</span>" if statuses else ""
-    return f"{ROBOT_ICON}\u2009{sum(counts.values())}{detail}"
+    reply = json.loads(result.stdout)
+    if "error" in reply:
+        raise ValueError("hc terminal.list failed")
+    return reply["result"]
 
 
-def render(counts, machines, reachable):
-    priority = ("blocked", "done", "working", "unknown", "idle")
-    if not reachable and any(not isinstance(state, str) for _, state in machines):
-        css_class = "unavailable"
-    else:
-        css_class = next((status for status in priority if counts[status]), "idle")
-    lines = [f"Herdr: {count_text(counts)}"]
-    for label, sessions in machines:
-        if isinstance(sessions, str):
-            lines.append(f"  {label}: {sessions}")
-            continue
-        if sessions is None:
-            lines.append(f"  {label}: unavailable")
-            continue
-        lines.append(f"  {label}")
-        for name, session_counts in sessions:
-            detail = "unavailable" if session_counts is None else count_text(session_counts)
-            lines.append(f"    {name}: {detail}")
-
-    return {
-        "text": bar_text(counts),
-        "tooltip": "\n".join(lines),
-        "class": css_class,
-    }
-
-
-def read_cache(path):
+def agent_status(terminal):
+    report = terminal.get("status")
+    status = report.get("state") if isinstance(report, dict) else report
+    if status not in {"idle", "done"}:
+        return status
     try:
-        value = json.loads(path.read_text())
-        return value if isinstance(value, dict) else None
-    except (OSError, UnicodeError, json.JSONDecodeError):
-        return None
+        seen = int(terminal.get("labels", {}).get("herdr.seen"))
+    except (TypeError, ValueError):
+        return status
+    if seen < 0:
+        return status
+    return "done" if terminal.get("turn", 0) > seen else "idle"
 
 
 def read_disabled(path=STATE_PATH):
     try:
-        value = json.loads(path.read_text())
-        disabled = value.get("disabled", [])
+        disabled = json.loads(path.read_text()).get("disabled", [])
         if not isinstance(disabled, list):
             return set()
-        return {machine_id for machine_id in disabled if isinstance(machine_id, str)}
-    except (AttributeError, OSError, UnicodeError, json.JSONDecodeError):
+        return {key for key in disabled if isinstance(key, str)}
+    except (OSError, ValueError, AttributeError):
         return set()
 
 
-def write_disabled(path, disabled):
-    path.parent.mkdir(parents=True, exist_ok=True)
-    temporary = path.with_suffix(".tmp")
-    temporary.write_text(json.dumps({"disabled": sorted(disabled)}, separators=(",", ":")))
-    temporary.replace(path)
+def machine_key(name):
+    return "local" if name is None else f"machine:{name}"
 
 
-def reconcile_disabled(remotes, state_path=STATE_PATH):
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    with state_path.with_suffix(".lock").open("w") as lock:
-        fcntl.flock(lock, fcntl.LOCK_EX)
-        disabled = read_disabled(state_path)
-        known = {LOCAL_MACHINE["id"], *(machine["id"] for machine in remotes)}
-        reconciled = disabled & known
-        if reconciled != disabled:
-            write_disabled(state_path, reconciled)
-        return reconciled
+def count_text(counts):
+    parts = [f"{counts[state]} {state}" for state in STATUSES if counts[state]]
+    return ", ".join(parts) or "no agents"
+
+
+def render(snapshot, disabled):
+    machines = {None: "connected"}
+    machines.update((m["name"], m["state"]) for m in snapshot.get("machines", []))
+    per_machine = {name: Counter() for name in machines}
+    for terminal in snapshot["terminals"]:
+        status = agent_status(terminal)
+        if terminal["state"] != "live" or status is None:
+            continue
+        address = terminal["address"]
+        name = address.split("/", 1)[0] if "/" in address else None
+        if name in per_machine:
+            per_machine[name][status if status in STATUSES else "unknown"] += 1
+
+    counts = Counter()
+    details = []
+    partial = False
+    for name, state in machines.items():
+        if machine_key(name) in disabled:
+            detail = "excluded"
+        elif state != "connected":
+            detail = state
+            partial = True
+        else:
+            counts.update(per_machine[name])
+            detail = count_text(per_machine[name])
+        details.append(f"  {html.escape(name or 'local')}: {html.escape(detail)}")
+
+    statuses = "  ".join(
+        f"{icon}\u2009{counts[state]}" for state, icon in STATUS_ICONS.items() if counts[state]
+    )
+    text = f"{ROBOT_ICON}\u2009{sum(counts.values())}"
+    if statuses:
+        text += f"<span size='small' weight='normal'>\u2009\u2009{statuses}</span>"
+    if partial:
+        text += f"  {STATUS_ICONS['blocked']}"
+    priority = ("blocked", "error", "done", "working", "unknown", "idle")
+    css_class = next((state for state in priority if counts[state]), "idle")
+    return {
+        "text": text,
+        "tooltip": "\n".join([f"Herdr: {count_text(counts)}", *details]),
+        "class": [css_class, "partial"] if partial else css_class,
+    }
+
+
+def unavailable():
+    return {
+        "text": f"{ROBOT_ICON}\u2009!",
+        "tooltip": "Herdr: local core unavailable; reconnecting",
+        "class": "unavailable",
+    }
+
+
+def needs_refresh(message):
+    return (
+        "terminals" in message
+        or message.get("method") in {"missed", "heartbeat"}
+        or (
+            message.get("method") == "event"
+            and message["params"].get("type") in REFRESH_EVENTS
+        )
+    )
+
+
+def follow(stream, emit, state_path=STATE_PATH, fetch=core_snapshot):
+    os.set_blocking(stream.fileno(), False)
+    buffer = b""
+    last_message = next_state_check = time.monotonic()
+    last_refresh = None
+    pending = None
+    disabled = read_disabled(state_path)
+    with selectors.DefaultSelector() as selector:
+        selector.register(stream, selectors.EVENT_READ)
+        while True:
+            now = time.monotonic()
+            if now - last_message >= EVENT_TIMEOUT:
+                raise TimeoutError("hc event stream stopped responding")
+            if now >= next_state_check:
+                current = read_disabled(state_path)
+                if current != disabled:
+                    disabled, pending = current, now
+                next_state_check = now + STATE_INTERVAL
+            # ponytail: poll connection states after 15s without a snapshot;
+            # replace this fallback if core adds machine connection events.
+            if pending is None and last_refresh is not None and now - last_refresh >= HEALTH_INTERVAL:
+                pending = now
+            if pending is not None and now >= pending:
+                emit(render(fetch(), disabled))
+                last_refresh = time.monotonic()
+                pending = None
+            deadline = min(next_state_check, pending) if pending is not None else next_state_check
+            timeout = max(0, deadline - time.monotonic())
+            if not selector.select(timeout):
+                continue
+            chunk = os.read(stream.fileno(), 65536)
+            if not chunk:
+                raise EOFError("hc event stream closed")
+            buffer += chunk
+            while b"\n" in buffer:
+                line, buffer = buffer.split(b"\n", 1)
+                message = json.loads(line)
+                if not isinstance(message, dict):
+                    raise ValueError("expected an hc JSON object")
+                last_message = time.monotonic()
+                if needs_refresh(message) and pending is None:
+                    pending = last_message
+                    if "terminals" not in message:
+                        pending += DEBOUNCE
+
+
+def watch(state_path=STATE_PATH):
+    previous = None
+
+    def emit(value):
+        nonlocal previous
+        if value != previous:
+            print(json.dumps(value, separators=(",", ":")), flush=True)
+            previous = value
+
+    while True:
+        client = None
+        try:
+            client = subprocess.Popen(
+                (HC, "events", "--json"), stdin=subprocess.DEVNULL,
+                stdout=subprocess.PIPE, bufsize=0,
+            )
+            follow(client.stdout, emit, state_path)
+        except (OSError, ValueError, KeyError, TypeError, EOFError, subprocess.SubprocessError):
+            emit(unavailable())
+        finally:
+            if client is not None:
+                if client.poll() is None:
+                    client.terminate()
+                    try:
+                        client.wait(timeout=2)
+                    except subprocess.TimeoutExpired:
+                        client.kill()
+                        client.wait()
+                client.stdout.close()
+        time.sleep(RETRY_DELAY)
 
 
 def choose_machine(entries):
-    try:
-        result = subprocess.run(
-            ("wofi", "--dmenu", "--prompt", "Herdr polling"),
-            input="\n".join(entries),
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-    except OSError:
-        return None
+    result = subprocess.run(
+        ("wofi", "--dmenu", "--prompt", "Herdr machines"),
+        input="\n".join(entries), capture_output=True, text=True,
+    )
     return result.stdout.rstrip("\n") if result.returncode == 0 else None
 
 
-def polling_menu(state_path=STATE_PATH, fetch=command_json, choose=choose_machine):
-    remotes = machine_catalog(fetch)
-    if remotes is None:
-        return False
-
-    disabled = reconcile_disabled(remotes, state_path)
-    machines = [LOCAL_MACHINE, *(machine for machine in remotes if machine["enabled"])]
+def machine_menu(state_path=STATE_PATH, fetch=core_snapshot, choose=choose_machine):
+    snapshot = fetch()
+    disabled = read_disabled(state_path)
+    machines = [(None, "connected")]
+    machines.extend((m["name"], m["state"]) for m in snapshot.get("machines", []))
     selections = {}
-    for machine in machines:
-        marker = "○" if machine["id"] in disabled else "●"
-        if machine["target"] is None:
-            detail = "local"
-        else:
-            detail = f"{machine['target']}/{machine['session']}"
-        entry = f"{marker} {machine['label']} — {detail} [{machine['id'][:8]}]"
-        selections[entry] = machine["id"]
-
+    for name, state in machines:
+        key = machine_key(name)
+        marker = "○" if key in disabled else "●"
+        label = "local [this machine]" if name is None else name
+        selections[f"{marker} {label} ({state})"] = key
     selected = choose(list(selections))
     if selected not in selections:
         return False
-
-    machine_id = selections[selected]
     state_path.parent.mkdir(parents=True, exist_ok=True)
     with state_path.with_suffix(".lock").open("w") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         disabled = read_disabled(state_path)
-        if machine_id in disabled:
-            disabled.remove(machine_id)
-        else:
-            disabled.add(machine_id)
-        write_disabled(state_path, disabled)
+        key = selections[selected]
+        disabled.symmetric_difference_update({key})
+        temporary = state_path.with_suffix(".tmp")
+        temporary.write_text(json.dumps({"disabled": sorted(disabled)}))
+        temporary.replace(state_path)
     return True
 
 
-def refresh(cache_path=CACHE_PATH, state_path=STATE_PATH, fetch=command_json):
-    cache_path.parent.mkdir(parents=True, exist_ok=True)
-    with cache_path.with_suffix(".lock").open("w") as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError:
-            return read_cache(cache_path) or render(Counter(), [], 0)
-
-        remotes = machine_catalog(fetch)
-        if remotes is None:
-            return read_cache(cache_path) or render(Counter(), [], 0)
-
-        disabled = reconcile_disabled(remotes, state_path)
-        collected = collect(remotes, disabled, fetch)
-        result = render(*collected)
-        temporary = cache_path.with_suffix(".tmp")
-        try:
-            temporary.write_text(json.dumps(result, separators=(",", ":")))
-            temporary.replace(cache_path)
-        except OSError:
-            pass
-        return result
-
-
 def main():
-    if sys.argv[1:] == ["menu"]:
-        polling_menu()
-    elif sys.argv[1:]:
-        raise SystemExit(f"usage: {Path(sys.argv[0]).name} [menu]")
-    else:
-        print(json.dumps(refresh(), separators=(",", ":")))
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+    try:
+        if sys.argv[1:] == ["menu"]:
+            machine_menu()
+        elif sys.argv[1:] == ["--once"]:
+            result = render(core_snapshot(), read_disabled())
+            print(json.dumps(result, separators=(",", ":")))
+        elif not sys.argv[1:]:
+            watch()
+        else:
+            raise SystemExit(f"usage: {Path(sys.argv[0]).name} [menu | --once]")
+    except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError):
+        print(json.dumps(unavailable()), flush=True)
+        raise SystemExit(1)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except (KeyboardInterrupt, BrokenPipeError):
+        pass
