@@ -4,11 +4,16 @@ import json
 import os
 import re
 import sys
+import tempfile
 from pathlib import Path
 
 PROCESS_NAME = "CiscoCollabHost"
 LOG_PATH = Path.home() / ".local/share/Webex/current_log.txt"
 ICON_PATH = Path.home() / ".local/share/WebexLauncher/sparklogosmall.png"
+CACHE_PATH = (
+    Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache"))
+    / "waybar/webex-unread"
+)
 COUNT_PATTERN = re.compile(rb"all unread messages count in filter is (\d+)")
 
 
@@ -42,6 +47,30 @@ def unread_count(path=LOG_PATH):
     raise ValueError("no unread count found in Webex log")
 
 
+def cached_unread_count(path=LOG_PATH, cache_path=CACHE_PATH):
+    try:
+        count = unread_count(path)
+    except (OSError, ValueError) as error:
+        try:
+            count = int(cache_path.read_text())
+            if count < 0:
+                raise ValueError("negative cached unread count")
+            return count
+        except (OSError, ValueError):
+            raise error from None
+
+    try:
+        cache_path.parent.mkdir(parents=True, exist_ok=True)
+        # The icon and counter poll separately; publish the cache atomically.
+        with tempfile.TemporaryDirectory(dir=cache_path.parent) as directory:
+            temporary = Path(directory) / cache_path.name
+            temporary.write_text(str(count))
+            temporary.replace(cache_path)
+    except OSError:
+        pass
+    return count
+
+
 def error_message(error):
     if isinstance(error, FileNotFoundError):
         detail = "Webex log not found"
@@ -52,7 +81,7 @@ def error_message(error):
     return f"Webex unread count unavailable: {detail}"
 
 
-def status(running=webex_running, read_count=unread_count):
+def status(running=webex_running, read_count=cached_unread_count):
     if not running():
         return {"text": "", "tooltip": "", "class": "hidden"}
     try:
@@ -69,7 +98,7 @@ def status(running=webex_running, read_count=unread_count):
     }
 
 
-def icon(running=webex_running, read_count=unread_count):
+def icon(running=webex_running, read_count=cached_unread_count):
     if not running():
         return ""
     try:
